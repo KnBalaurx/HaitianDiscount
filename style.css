@@ -87,12 +87,14 @@ h2 { color: var(--accent-cyan); border-bottom: 2px solid var(--brand-purple); di
 
 /* PRESUPUESTO */
 .budget-box {
-    background-color: var(--brand-purple);
+    background: rgba(57, 40, 83, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     padding: 30px;
     border-radius: 15px;
-    border: 1px solid #58407b;
     margin: 20px 0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
 #tope-dinero {
@@ -107,12 +109,14 @@ small { color: #aaa; font-style: italic; }
 
 /* FORMULARIO */
 form {
-    background-color: var(--brand-purple);
+    background: rgba(57, 40, 83, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     padding: 40px;
     border-radius: 15px;
     text-align: left;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    border: 1px solid #58407b;
 }
 
 label {
@@ -171,37 +175,31 @@ button:active { transform: scale(0.98); }
     border-left: 4px solid var(--accent-green); 
     border-radius: 4px;
     display: none; 
-    
-    /* Flexbox para dividir en columnas */
     flex-direction: row;
     justify-content: space-between;
     gap: 20px;
 }
 
-/* Columna Izquierda (Precios) */
 .res-col-left {
     flex: 1; 
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centra el bloque verticalmente */
-    gap: 2px; /* Espacio muy pequeño entre los textos */
+    justify-content: center;
+    gap: 2px;
 }
 
-/* Quitamos márgenes por defecto a los párrafos de esta columna */
 .res-col-left p {
     margin: 0; 
-    line-height: 1.2; /* Ayuda a que las líneas no sean tan altas */
+    line-height: 1.2;
 }
 
-/* Ajustamos el texto del precio final */
 .precio-final-text {
     color: var(--accent-green);
-    font-size: 1.5rem; /* Un poco más grande para destacar */
+    font-size: 1.5rem;
     font-weight: bold;
-    margin-top: 5px; /* Solo un poquito de separación con el de arriba */
+    margin-top: 5px;
 }
 
-/* Columna Derecha (Datos Bancarios) */
 .res-col-right {
     flex: 1;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
@@ -216,23 +214,8 @@ button:active { transform: scale(0.98); }
     display: inline-block;
 }
 
-.bank-info p {
-    margin: 4px 0;
-    color: #ccc;
-    display: flex;
-    justify-content: space-between;
-}
-
-.bank-info span {
-    font-weight: bold;
-    color: var(--text-main);
-    margin-right: 10px;
-}
-
-.precio-final-text { color: var(--accent-green); font-size: 1.4rem; font-weight: bold; margin: 10px 0; }
 .alerta { color: #ff4444; background-color: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; border: 1px solid #ff4444; font-size: 0.9rem; }
 .hidden { display: none; }
-
 
 /* FOOTER */
 footer {
@@ -246,27 +229,140 @@ footer {
 }
 hr { border-color: #392853; width: 50%; margin: 20px auto; }
 
-/* SWEETALERT */
+/* ============================== */
+/* ESTILOS MEJORADOS SWEETALERT 2 */
+/* ============================== */
+
+/* 1. POPUP: Sin halo de luz, solo borde sutil */
 div:where(.swal2-container) div:where(.swal2-popup) {
-    background-color: var(--bg-body) !important; 
-    border: 1px solid var(--brand-purple);
-    box-shadow: 0 0 20px rgba(160, 68, 255, 0.2);
+    background: rgba(57, 40, 83, 0.98) !important; 
+    border: 1px solid #58407b; /* Borde morado oscuro discreto */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important; /* Sombra negra normal, sin brillo */
+    border-radius: 20px !important;
+    padding: 30px !important;
 }
-div:where(.swal2-container) h2:where(.swal2-title) { color: var(--accent-cyan) !important; text-shadow: 0 0 5px rgba(0, 242, 255, 0.3); }
-div:where(.swal2-container) div:where(.swal2-html-container) { color: var(--text-main) !important; }
+
+/* Títulos */
+div:where(.swal2-container) h2:where(.swal2-title) {
+    color: var(--accent-cyan) !important;
+    text-shadow: none !important;
+    font-size: 1.6rem !important;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+/* 2. CONTENEDOR DE BOTONES (Por defecto: Flexbox Centrado) */
+div:where(.swal2-container) .swal2-actions {
+    display: flex !important;
+    justify-content: center !important; /* CENTRADO PERFECTO */
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px !important;
+}
+
+/* Estilo General de Botones */
+div:where(.swal2-container) button:where(.swal2-styled) {
+    padding: 12px 25px !important;
+    font-weight: bold !important;
+    text-transform: uppercase;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    min-width: 120px;
+}
+
+/* Estilos Específicos de Colores */
 div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
     background: var(--btn-gradient) !important;
-    box-shadow: 0 0 10px rgba(160, 68, 255, 0.4);
+    box-shadow: none !important;
 }
-div:where(.swal2-icon).swal2-success { border-color: var(--accent-green) !important; color: var(--accent-green) !important; }
+div:where(.swal2-container) button:where(.swal2-styled).swal2-deny {
+    background: transparent !important;
+    border: 1px solid var(--accent-cyan) !important;
+    color: var(--accent-cyan) !important;
+}
+div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel {
+    background: #251a36 !important;
+    color: #aaa !important;
+    border: 1px solid #444 !important;
+}
 
-/* MEDIA QUERIES (RESPONSIVO) */
+/* 3. EXCEPCIÓN: SOLO PARA EL MENÚ PRINCIPAL (GRID) */
+.popup-menu-grid .swal2-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.popup-menu-grid .swal2-cancel {
+    grid-column: span 2;
+    margin-top: 5px;
+}
+
+/* --- INPUTS --- */
+.swal-custom-label {
+    display: block;
+    text-align: left;
+    width: 100%;
+    max-width: 300px;
+    margin: 15px auto 5px auto;
+    color: var(--accent-cyan);
+    font-weight: bold;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+div:where(.swal2-container) input:where(.swal2-input) {
+    width: 100% !important;
+    max-width: 300px !important;
+    margin: 0 auto !important;
+    background-color: #251a36 !important;
+    border: 1px solid #58407b !important;
+    color: white !important;
+    border-radius: 6px !important;
+    height: 45px !important;
+}
+
+/* Iconos */
+div:where(.swal2-icon).swal2-success { border-color: var(--accent-green) !important; color: var(--accent-green) !important; }
+div:where(.swal2-icon).swal2-error { border-color: #ff4444 !important; color: #ff4444 !important; }
+div:where(.swal2-icon).swal2-warning { border-color: #ffbb33 !important; color: #ffbb33 !important; }
+div:where(.swal2-icon).swal2-question { border-color: var(--accent-cyan) !important; color: var(--accent-cyan) !important; }
+
+/* WHATSAPP BTN */
+.btn-wsp {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background-color: #25d366;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+.btn-wsp:hover {
+    transform: scale(1.1) translateY(-5px);
+    box-shadow: 0 10px 25px rgba(37, 211, 102, 0.6);
+    background-color: #20bd5a;
+}
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+.btn-wsp { animation: pulse-green 2s infinite; }
+
+/* MEDIA QUERIES */
 @media (max-width: 768px) {
     nav { flex-direction: column; padding: 15px; }
     nav ul { margin-top: 10px; justify-content: center; width: 100%; }
     .logo { margin-bottom: 5px; }
 }
-
 @media (max-width: 600px) {
     #resultado { flex-direction: column; }
     .res-col-right {
