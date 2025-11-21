@@ -1,4 +1,4 @@
-// 1. IMPORTS (Agregamos 'get' y 'child' para buscar códigos)
+// 1. IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, runTransaction, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -27,7 +27,7 @@ const saldoRef = ref(db, 'presupuesto');
 const SERVICE_ID = 'service_jke4epd';    
 const TEMPLATE_ID = 'template_0l9w69b'; 
 
-// Variables
+// Variables DOM
 let presupuestoActual = 0; 
 const displayTope = document.getElementById('tope-dinero');
 const inputPrecioFinal = document.getElementById('precioFinalInput');
@@ -46,10 +46,9 @@ onValue(saldoRef, (snapshot) => {
     setTimeout(() => displayTope.style.color = '#00ff88', 300);
 });
 
-// --- LÓGICA INTELIGENTE DE DESCUENTO CON BASE DE DATOS ---
+// --- LÓGICA INTELIGENTE DE DESCUENTO (CORREGIDA) ---
 window.calcularDescuento = function() {
     const precioInput = document.getElementById('precioSteam').value;
-    // Obtenemos el código escrito y quitamos espacios (trim)
     const codigoInput = document.getElementById('codigoInvitado').value.trim(); 
 
     if (!precioInput || precioInput <= 0) {
@@ -57,75 +56,84 @@ window.calcularDescuento = function() {
         return;
     }
 
-    // Mostramos "Cargando..." mientras buscamos en la base de datos
+    const precio = parseFloat(precioInput);
+
+    // === CORRECCIÓN AQUÍ ===
+    // Si NO escribió ningún código, calculamos normal y salimos.
+    if (codigoInput === "") {
+        const descuento = 0.30; 
+        const precioFinal = Math.round(precio * (1 - descuento));
+        
+        // Mostrar resultados
+        mostrarResultadosUI(precio, precioFinal, false); // false = no es VIP
+        return; // Detenemos la función aquí para no molestar a Firebase
+    }
+
+    // Si SÍ escribió algo, verificamos en la base de datos
     Swal.fire({
         title: 'Verificando código...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
 
-    const precio = parseFloat(precioInput);
     const dbRef = ref(db);
 
-    // Buscamos en la ruta: codigos_vip / [lo que escribió el usuario]
-    // Si escribió "Mrbilivian2007", busca en codigos_vip/Mrbilivian2007
+    // Buscamos el código específico
     get(child(dbRef, `codigos_vip/${codigoInput}`)).then((snapshot) => {
-        
-        Swal.close(); // Cerramos el cargando
+        Swal.close();
 
-        let descuento = 0.30; // Descuento base (30%) por defecto
+        let descuento = 0.30;
         let esVip = false;
 
-        // ¿Existe ese código en la base de datos?
         if (snapshot.exists()) {
-            descuento = snapshot.val(); // Toma el valor (ej: 0.35 o 0.45)
+            descuento = snapshot.val(); // Toma el valor real (ej: 0.35)
             esVip = true;
+        } else {
+            Swal.fire('Código no válido', 'Se aplicará el descuento normal del 30%', 'info');
         }
 
-        // Calcular precio final
         const precioFinal = Math.round(precio * (1 - descuento));
-
-        // Mostrar resultados
-        document.getElementById('resultado').style.display = 'block';
-        document.getElementById('res-original').innerText = formatoDinero(precio);
-        document.getElementById('res-final').innerText = formatoDinero(precioFinal);
-        inputPrecioFinal.value = formatoDinero(precioFinal);
-
-        // Feedback Visual
-        if (esVip) {
-            const porcentaje = Math.round(descuento * 100); // Convierte 0.35 a 35
-            
-            Swal.fire({
-                icon: 'success',
-                title: '¡Código Amigo Encontrado!',
-                text: `Se ha aplicado un ${porcentaje}% de descuento.`,
-                timer: 2000,
-                showConfirmButton: false
-            });
-            document.getElementById('res-final').style.color = '#ffd700'; // Dorado
-        } else {
-            // Si escribió algo pero no era válido, o no escribió nada
-            if(codigoInput !== "" && !esVip) {
-                 Swal.fire('Código no válido', 'Se aplicará el descuento normal del 30%', 'info');
-            }
-            document.getElementById('res-final').style.color = '#00ff88'; // Verde normal
-        }
-
-        // Validar si me alcanza el dinero
-        if (precioFinal > presupuestoActual) {
-            document.getElementById('alerta-presupuesto').style.display = 'block';
-            btnEnviar.classList.remove('active'); 
-            Swal.fire('Sin cupo', `Solo quedan ${formatoDinero(presupuestoActual)}`, 'error');
-        } else {
-            document.getElementById('alerta-presupuesto').style.display = 'none';
-            btnEnviar.classList.add('active');
-        }
+        
+        // Mostrar resultados y alerta VIP si corresponde
+        mostrarResultadosUI(precio, precioFinal, esVip, descuento);
 
     }).catch((error) => {
         console.error(error);
         Swal.close();
-        Swal.fire('Error', 'Error de conexión al verificar el código.', 'error');
+        Swal.fire('Error', 'Error de conexión al verificar.', 'error');
     });
+}
+
+// Función auxiliar para no repetir código visual
+function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
+    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
+    document.getElementById('res-final').innerText = formatoDinero(precioFinal);
+    inputPrecioFinal.value = formatoDinero(precioFinal);
+
+    if (esVip) {
+        const porcentaje = Math.round(descuentoValor * 100);
+        Swal.fire({
+            icon: 'success',
+            title: '¡Código Amigo Encontrado!',
+            text: `Se ha aplicado un ${porcentaje}% de descuento.`,
+            timer: 2000,
+            showConfirmButton: false
+        });
+        document.getElementById('res-final').style.color = '#ffd700'; // Dorado
+    } else {
+        document.getElementById('res-final').style.color = '#00ff88'; // Verde normal
+    }
+
+    // Validar presupuesto
+    if (precioFinal > presupuestoActual) {
+        document.getElementById('alerta-presupuesto').style.display = 'block';
+        btnEnviar.classList.remove('active'); 
+        Swal.fire('Sin cupo', `Solo quedan ${formatoDinero(presupuestoActual)}`, 'error');
+    } else {
+        document.getElementById('alerta-presupuesto').style.display = 'none';
+        btnEnviar.classList.add('active');
+    }
 }
 
 // --- ENVIAR PEDIDO ---
