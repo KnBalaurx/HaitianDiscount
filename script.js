@@ -1,11 +1,9 @@
-// 1. IMPORTS (Limpios, solo lo necesario)
+// 1. IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, runTransaction, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// ==============================================================
-// TU CONFIGURACIÓN FIREBASE
-// ==============================================================
+// CONFIGURACIÓN FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyAVQm_MUEWQaf7NXzna2r4Sgbl5SeGNOyM",
     authDomain: "haitiandiscount.firebaseapp.com",
@@ -17,7 +15,7 @@ const firebaseConfig = {
     measurementId: "G-EMVPQGPWTE"
 };
 
-// Inicializar Apps
+// INICIALIZACIÓN
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app); 
@@ -27,7 +25,7 @@ const saldoRef = ref(db, 'presupuesto');
 const SERVICE_ID = 'service_jke4epd';    
 const TEMPLATE_ID = 'template_0l9w69b'; 
 
-// Variables DOM
+// DOM Elements
 let presupuestoActual = 0; 
 const displayTope = document.getElementById('tope-dinero');
 const inputPrecioFinal = document.getElementById('precioFinalInput');
@@ -37,97 +35,96 @@ const btnEnviar = document.getElementById('btnEnviar');
 // Formateador Dinero
 const formatoDinero = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
 
-// --- ACTUALIZACIÓN SALDO EN TIEMPO REAL ---
+// --- ACTUALIZACIÓN SALDO ---
 onValue(saldoRef, (snapshot) => {
     const data = snapshot.val();
     presupuestoActual = data || 0;
     displayTope.innerText = formatoDinero(presupuestoActual);
-    displayTope.style.color = '#fff';
-    setTimeout(() => displayTope.style.color = '#00ff88', 300);
 });
 
 // ==============================================================
-// MODO MANTENIMIENTO (TIENDA ABIERTA/CERRADA)
+// ESTADO TIENDA
 // ==============================================================
 const estadoRef = ref(db, 'estado_tienda');
-let tiendaAbierta = true; // Por defecto asumimos abierta
+let tiendaAbierta = true; 
 
 onValue(estadoRef, (snapshot) => {
-    const estado = snapshot.val(); // Puede ser "abierto" o "cerrado"
+    const estado = snapshot.val(); 
     const btnCalc = document.querySelector('.btn-calc');
     
     if (estado === 'cerrado') {
         tiendaAbierta = false;
-        
-        // Bloquear botones visualmente
         btnEnviar.disabled = true;
-        btnEnviar.innerText = "⛔ TIENDA CERRADA";
-        btnEnviar.classList.remove('active');
+        btnEnviar.innerText = "CERRADO TEMPORALMENTE";
         
-        if(btnCalc) {
-            btnCalc.disabled = true;
-            btnCalc.style.borderColor = '#555';
-            btnCalc.style.color = '#555';
-        }
-        
-        // Mostrar alerta
+        if(btnCalc) btnCalc.disabled = true;
+
         Swal.fire({
             toast: true,
             position: 'top-end',
-            icon: 'warning',
-            title: 'Tienda Cerrada',
-            text: 'Vuelve más tarde.',
+            icon: 'info',
+            title: 'Tienda en Pausa',
             showConfirmButton: false,
-            background: '#392853',
-            color: '#fff'
+            timer: 3000
         });
-
     } else {
         tiendaAbierta = true;
-        
-        // Restaurar estado normal
-        btnEnviar.disabled = false;
-        btnEnviar.innerText = "2. ENVIAR PEDIDO";
-        
-        if(btnCalc) {
-            btnCalc.disabled = false;
-            btnCalc.style.borderColor = ''; 
-            btnCalc.style.color = '';
-        }
+        btnEnviar.innerText = "Enviar Pedido";
+        // Ojo: btnEnviar sigue disabled hasta que calculen precio, controlamos eso en logic
+        if(btnCalc) btnCalc.disabled = false;
     }
 });
 
 // ==============================================================
-// LÓGICA DEL FORMULARIO
+// LÓGICA DE NEGOCIO
 // ==============================================================
 
-// --- LÓGICA INTELIGENTE DE DESCUENTO ---
+// --- VALIDACIÓN DE INPUT DE PRECIO (NUEVO) ---
+const inputPrecio = document.getElementById('precioSteam');
+
+inputPrecio.addEventListener('input', function() {
+    // 1. Si el valor empieza con 0, lo limpiamos
+    if (this.value.startsWith('0')) {
+        this.value = this.value.substring(1);
+    }
+    // 2. Si es negativo o tiene caracteres inválidos (e, +, -), limpiamos
+    if (this.value < 0) {
+        this.value = Math.abs(this.value);
+    }
+    // 3. Asegurar que no esté vacío para evitar errores visuales
+    if (this.value === '') return;
+});
+
+// Validar también que no peguen textos o signos raros
+inputPrecio.addEventListener('keydown', function(e) {
+    // Prevenir signo menos (-) y el punto (.) si solo quieres enteros
+    if (e.key === '-' || e.key === '.' || e.key === ',') {
+        e.preventDefault();
+    }
+});
+
+
 window.calcularDescuento = function() {
-    // Validación de seguridad por Mantenimiento
     if (!tiendaAbierta) {
-        Swal.fire('Cerrado', 'La tienda no está recibiendo pedidos ahora.', 'error');
+        Swal.fire('Tienda Cerrada', 'Estamos reponiendo stock, vuelve pronto.', 'warning');
         return;
     }
 
-    // 1. OBTENER VARIABLES
     const precioInput = document.getElementById('precioSteam').value;
     const codigoInput = document.getElementById('codigoInvitado').value.trim(); 
     const inputCodigoElem = document.getElementById('codigoInvitado'); 
 
-    // 2. LIMPIEZA DE ESTILOS
-    inputCodigoElem.style.borderColor = ''; 
-    inputCodigoElem.style.boxShadow = '';
-    inputCodigoElem.style.color = ''; 
+    // Reset visual
+    inputCodigoElem.classList.remove('vip-active');
 
-    // 3. VALIDAR PRECIO
     if (!precioInput || precioInput <= 0) {
-        Swal.fire('¡Atención!', 'Ingresa el precio del juego.', 'warning');
+        Swal.fire('Faltan datos', 'Ingresa el precio del juego en Steam.', 'warning');
         return;
     }
 
     const precio = parseFloat(precioInput);
 
-    // CASO 1: No escribió código
+    // CASO 1: Sin código
     if (codigoInput === "") {
         const descuento = 0.30; 
         const precioFinal = Math.round(precio * (1 - descuento));
@@ -135,34 +132,20 @@ window.calcularDescuento = function() {
         return; 
     }
 
-    // CASO 2: Escribió código
-    Swal.fire({
-        title: 'Verificando código...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
+    // CASO 2: Con código
+    Swal.fire({ title: 'Verificando...', didOpen: () => Swal.showLoading() });
 
-    const dbRef = ref(db);
-
-    get(child(dbRef, `codigos_vip/${codigoInput}`)).then((snapshot) => {
+    get(child(ref(db), `codigos_vip/${codigoInput}`)).then((snapshot) => {
         Swal.close();
-
         let descuento = 0.30;
         let esVip = false;
 
         if (snapshot.exists()) {
             descuento = snapshot.val(); 
             esVip = true;
-            // Visual Dorado
-            inputCodigoElem.style.borderColor = '#ffd700'; 
-            inputCodigoElem.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.5)';
-            inputCodigoElem.style.color = '#ffd700';
+            inputCodigoElem.classList.add('vip-active'); // Clase CSS dorada
         } else {
-            Swal.fire('Código no válido', 'Se aplicará el descuento normal del 30%', 'info');
-            // Visual Rojo
-            inputCodigoElem.style.borderColor = '#ff4444';
-            inputCodigoElem.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
-            inputCodigoElem.style.color = '#ff4444';
+            Swal.fire('Código inválido', 'Se aplicará el descuento estándar.', 'info');
         }
 
         const precioFinal = Math.round(precio * (1 - descuento));
@@ -171,78 +154,58 @@ window.calcularDescuento = function() {
     }).catch((error) => {
         console.error(error);
         Swal.close();
-        Swal.fire('Error', 'Error de conexión al verificar.', 'error');
+        Swal.fire('Error', 'No se pudo verificar el código.', 'error');
     });
 }
 
-// --- FUNCIÓN VISUAL CON ANIMACIÓN ---
 function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
     const resultadoDiv = document.getElementById('resultado');
-    
-    resultadoDiv.style.display = 'flex'; 
+    resultadoDiv.style.display = 'block'; // Mostrar bloque
     
     const msjComprobante = document.getElementById('mensaje-comprobante');
     if(msjComprobante) msjComprobante.style.display = 'block';
 
-    const animateValue = (id, start, end, duration) => {
-        const obj = document.getElementById(id);
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const value = Math.floor(progress * (end - start) + start);
-            obj.innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            } else {
-                obj.innerText = formatoDinero(end);
-            }
-        };
-        window.requestAnimationFrame(step);
-    };
-
-    animateValue('res-original', 0, precioOriginal, 1000);
-    animateValue('res-final', 0, precioFinal, 1500);
-
-    inputPrecioFinal.value = formatoDinero(precioFinal);
+    document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
+    
     const resFinalElem = document.getElementById('res-final');
+    resFinalElem.innerText = formatoDinero(precioFinal);
+    inputPrecioFinal.value = formatoDinero(precioFinal);
 
+    // Estilo VIP en texto
     if (esVip) {
+        resFinalElem.classList.add('text-vip');
         const porcentaje = Math.round(descuentoValor * 100);
         Swal.fire({
             icon: 'success',
-            title: '¡Código VIP Activado! 🌟',
+            title: '¡Código VIP Aplicado!',
             text: `Descuento mejorado al ${porcentaje}%.`,
             timer: 2000,
             showConfirmButton: false
         });
-        resFinalElem.style.color = '#ffd700'; 
-        resFinalElem.style.textShadow = '0 0 15px rgba(255, 215, 0, 0.6)';
     } else {
-        resFinalElem.style.color = '#00ff88'; 
-        resFinalElem.style.textShadow = 'none';
+        resFinalElem.classList.remove('text-vip');
     }
 
+    // Validar presupuesto
+    const alerta = document.getElementById('alerta-presupuesto');
     if (precioFinal > presupuestoActual) {
-        document.getElementById('alerta-presupuesto').style.display = 'block';
-        btnEnviar.classList.remove('active'); 
-        Swal.fire('Sin cupo', `Solo quedan ${formatoDinero(presupuestoActual)}`, 'error');
+        alerta.classList.remove('hidden');
+        btnEnviar.disabled = true;
     } else {
-        document.getElementById('alerta-presupuesto').style.display = 'none';
-        btnEnviar.classList.add('active');
+        alerta.classList.add('hidden');
+        btnEnviar.disabled = false; // Habilitar botón
     }
 }
 
 // --- ENVIAR PEDIDO ---
 form.addEventListener('submit', function(event) {
     event.preventDefault(); 
-    if (!btnEnviar.classList.contains('active')) return;
-    if (!tiendaAbierta) return; // Seguridad extra
+    if (!tiendaAbierta || btnEnviar.disabled) return;
 
     const precioStr = document.getElementById('res-final').innerText;
     const costoJuego = parseInt(precioStr.replace(/\D/g, '')); 
 
-    Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Enviando...', text: 'No cierres esta ventana', didOpen: () => Swal.showLoading() });
 
     runTransaction(saldoRef, (saldoActual) => {
         const actual = saldoActual || 0;
@@ -250,43 +213,34 @@ form.addEventListener('submit', function(event) {
         else return; 
     }).then((result) => {
         if (result.committed) {
-            // (Aquí eliminé la parte que guardaba el historial)
-
             emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, this).then(() => {
-                Swal.fire('¡Éxito!', 'Pedido enviado.', 'success');
+                Swal.fire('¡Solicitud Enviada!', 'Revisa tu correo para los pasos finales.', 'success');
                 form.reset();
                 document.getElementById('resultado').style.display = 'none';
-                
-                const msjComp = document.getElementById('mensaje-comprobante');
-                if(msjComp) msjComp.style.display = 'none';
-                
-                btnEnviar.classList.remove('active');
+                btnEnviar.disabled = true;
             });
         } else {
-            Swal.fire('Error', 'Se agotó el cupo mientras comprabas.', 'error');
+            Swal.fire('Lo sentimos', 'Justo se acaba de agotar el cupo.', 'error');
         }
     }).catch((err) => {
         console.error(err);
-        Swal.fire('Error', 'Error de conexión.', 'error');
+        Swal.fire('Error', 'Problema de conexión.', 'error');
     });
 });
 
 // ==============================================================
-// PANEL DE ADMINISTRADOR
+// ADMIN PANEL (Simplificado para tema claro)
 // ==============================================================
 document.getElementById('btn-login-admin').addEventListener('click', async (e) => {
     e.preventDefault(); 
     const { value: formValues } = await Swal.fire({
-        title: 'Acceso Administrador',
+        title: 'Acceso Administrativo',
         html:
-            '<label class="swal-custom-label">Usuario (Email)</label>' +
-            '<input id="swal-email" class="swal2-input" placeholder="ejemplo@correo.com" type="email">' +
-            '<label class="swal-custom-label">Contraseña</label>' +
-            '<input id="swal-password" class="swal2-input" placeholder="••••••••" type="password">',
+            '<input id="swal-email" class="swal2-input" placeholder="Email" type="email">' +
+            '<input id="swal-password" class="swal2-input" placeholder="Contraseña" type="password">',
         focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: 'Ingresar',
-        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Entrar',
         preConfirm: () => {
             return [
                 document.getElementById('swal-email').value,
@@ -297,100 +251,59 @@ document.getElementById('btn-login-admin').addEventListener('click', async (e) =
 
     if (formValues) {
         const [email, password] = formValues;
-        Swal.fire({ title: 'Verificando...', didOpen: () => Swal.showLoading() });
-
         signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                mostrarMenuAdmin();
-            })
-            .catch((error) => {
-                Swal.fire('Error', 'Datos incorrectos: ' + error.code, 'error');
-            });
+            .then(() => mostrarMenuAdmin())
+            .catch((error) => Swal.fire('Error', 'Credenciales incorrectas', 'error'));
     }
 });
 
-// Menú Principal Admin (DISEÑO GRID Y SIN EMOJIS)
 async function mostrarMenuAdmin() {
     const { isConfirmed, isDenied } = await Swal.fire({
         title: 'Panel de Control',
-        text: 'Selecciona una acción',
         showDenyButton: true,
         showCancelButton: true,
-        
-        // TEXTOS LIMPIOS
-        confirmButtonText: 'Gestionar Saldo',
-        denyButtonText: 'Estado Tienda',
+        confirmButtonText: '💰 Ajustar Saldo',
+        denyButtonText: '🏪 Estado Tienda',
         cancelButtonText: 'Salir',
-        
-        confirmButtonColor: '#a044ff',
-        denyButtonColor: '#392853',
-        allowOutsideClick: false,
-
-        // ESTO ACTIVA EL GRID SOLO AQUÍ
-        customClass: {
-            popup: 'popup-menu-grid' 
-        }
+        confirmButtonColor: '#2563eb',
+        denyButtonColor: '#475569'
     });
 
-    if (isConfirmed) {
-        abrirGestorDeSaldo();
-    } else if (isDenied) {
-        gestionarEstadoTienda();
-    }
+    if (isConfirmed) abrirGestorDeSaldo();
+    else if (isDenied) gestionarEstadoTienda();
 }
 
-// Función Saldo (SIN EMOJIS Y CON LABEL BONITO)
 async function abrirGestorDeSaldo() {
     const { value: nuevoMonto } = await Swal.fire({
-        title: 'Gestión de Caja',
-        html: `
-            <div style="margin-bottom: 20px">Saldo actual: <span style="color:#00ff88; font-weight:bold">${formatoDinero(presupuestoActual)}</span></div>
-            <label class="swal-custom-label">NUEVO MONTO TOPE</label>
-            <input id="swal-input1" class="swal2-input" type="number" placeholder="${presupuestoActual}">
-        `,
+        title: 'Ajustar Cupo',
+        text: `Actual: ${formatoDinero(presupuestoActual)}`,
+        input: 'number',
+        inputValue: presupuestoActual,
         showCancelButton: true,
-        confirmButtonText: 'Actualizar',
-        cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-            return document.getElementById('swal-input1').value;
-        }
+        confirmButtonText: 'Guardar'
     });
 
     if (nuevoMonto) {
         set(saldoRef, parseInt(nuevoMonto))
-            .then(() => Swal.fire('Éxito', 'Saldo actualizado correctamente', 'success'))
-            .catch((error) => Swal.fire('Error', 'Fallo de conexión', 'error'));
+            .then(() => Swal.fire('Actualizado', 'El cupo ha sido modificado.', 'success'));
     }
 }
 
-// Interruptor Tienda (SIN EMOJIS Y BOTONES LIMPIOS)
 async function gestionarEstadoTienda() {
-    try {
-        const snap = await get(child(ref(db), 'estado_tienda'));
-        const estadoActual = snap.exists() ? snap.val() : 'abierto';
+    const snap = await get(child(ref(db), 'estado_tienda'));
+    const estadoActual = snap.exists() ? snap.val() : 'abierto';
+    const nuevoEstado = estadoActual === 'abierto' ? 'cerrado' : 'abierto';
 
-        const { isConfirmed } = await Swal.fire({
-            title: 'Estado de la Tienda',
-            text: `Estado actual: ${estadoActual.toUpperCase()}`,
-            icon: estadoActual === 'abierto' ? 'success' : 'warning',
-            
-            showCancelButton: true,
-            confirmButtonText: estadoActual === 'abierto' ? 'Cerrar Tienda' : 'Abrir Tienda',
-            cancelButtonText: 'Cancelar',
-            
-            confirmButtonColor: estadoActual === 'abierto' ? '#d33' : '#3085d6',
-            didOpen: () => Swal.hideLoading() 
-        });
+    const { isConfirmed } = await Swal.fire({
+        title: `La tienda está ${estadoActual.toUpperCase()}`,
+        text: `¿Deseas cambiarla a ${nuevoEstado.toUpperCase()}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cambiar estado'
+    });
 
-        if (isConfirmed) {
-            const nuevoEstado = estadoActual === 'abierto' ? 'cerrado' : 'abierto';
-            Swal.fire({ title: 'Actualizando...', didOpen: () => Swal.showLoading() });
-            await set(ref(db, 'estado_tienda'), nuevoEstado);
-            Swal.fire('Actualizado', `Tienda ${nuevoEstado}`, 'success');
-        }
-
-    } catch (error) {
-        console.error(error);
-        Swal.fire('Error', 'No se pudo leer el estado', 'error');
+    if (isConfirmed) {
+        await set(ref(db, 'estado_tienda'), nuevoEstado);
+        Swal.fire('Listo', `Tienda ${nuevoEstado}`, 'success');
     }
 }

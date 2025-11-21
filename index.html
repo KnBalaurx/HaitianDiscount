@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HaitianDiscount</title>
+    <title>HaitianDiscount | Juegos Digitales</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="content/logo.png">
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          // Inicializar EmailJS
           emailjs.init("GyDMRqWVvMxC765-L");
        })();
     </script>
@@ -18,106 +22,145 @@
 </head>
 <body>
 
-    <nav>
-        <div class="logo">HAITIAN DISCOUNT</div>
-        <ul>
-            <li><a href="#home">Inicio</a></li>
-            <li><a href="#presupuesto">Disponibilidad</a></li>
-            <li><a href="#pedido">Hacer Pedido</a></li>
-            <li><a href="#contacto">Contacto</a></li>
-            <li><a href="#" id="btn-login-admin" style="color: #ff0055;">Admin</a></li>
-        </ul>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="brand">HaitianDiscount<span class="dot">.</span></div>
+            <ul class="nav-links">
+                <li><a href="#presupuesto">Disponibilidad</a></li>
+                <li><a href="#pedido">Cotizar</a></li>
+                <li><a href="#" id="btn-login-admin" class="admin-link">Admin</a></li>
+            </ul>
+        </div>
     </nav>
 
-    <section id="home">
-        <h1>¡Tus juegos favoritos con un Descuento Especial!</h1>
-        <p>Bienvenido. Compro juegos de Steam y te los revendo con descuento.</p>
-        <p><strong>¿Cómo funciona?</strong> Revisa mi saldo disponible, llena el formulario, calcula tu descuento y envíame la solicitud.</p>
-    </section>
+    <header class="hero">
+        <div class="container">
+            <h1>Tus juegos de Steam,<br> <span class="highlight">30% más baratos.</span></h1>
+            <p class="subtitle">Gestionamos la compra de tus videojuegos favoritos optimizando el costo. Seguro, rápido y transparente.</p>
+        </div>
+    </header>
 
-    <section id="presupuesto">
-        <h2>Disponibilidad Actual</h2>
-        <div class="budget-box">
-            <p>Tope máximo disponible para compras hoy:</p>
-            <div id="tope-dinero">$0 CLP</div>
-            <small>Si el juego vale más que esto, no podré procesar tu pedido.</small>
+    <section id="presupuesto" class="section-budget">
+        <div class="container">
+            <div class="budget-card">
+                <div class="budget-info">
+                    <span class="label">Cupo diario disponible</span>
+                    <h2 id="tope-dinero">$0 CLP</h2>
+                </div>
+                <div class="budget-desc">
+                    <p>Actualizamos nuestro cupo en tiempo real. Si el valor del juego supera este monto, no podremos procesar la solicitud hasta renovar stock.</p>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section id="pedido">
-        <h2>Solicitar Juego</h2>
-        
-        <form id="gameForm">
-            <label>Correo Electrónico (Para enviarte la copia)</label>
-            <input type="email" name="email" id="email" required placeholder="tu@correo.com">
-
-            <label>Nombre y Apellido</label>
-            <input type="text" name="nombre" required placeholder="Juan Pérez">
-
-            <label>RUT</label>
-            <input type="text" name="rut" required placeholder="12.345.678-9">
-
-            <label>Nombre del Juego (Steam)</label>
-            <input type="text" name="juego" required placeholder="Ej: Elden Ring">
-
-            <label>Precio en Steam (CLP)</label>
-            <input type="number" id="precioSteam" name="precio_original" required placeholder="Ej: 40000">
-
-            <label>Usuario de Steam (Opcional)</label>
-            <input type="text" name="steam_user" placeholder="Tu ID o URL de perfil">
-
-            <label style="color: #00ff88;">Código de Invitado (Opcional)</label>
-            <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Si tienes uno, ponlo aquí">
-
-            <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
-            <input type="hidden" name="to_name" value="Admin Steam Pyme">
-
-            <div id="resultado">
-                <div class="res-col-left">
-                    <p>Precio Original: <span id="res-original"></span></p>
-                    <p class="precio-final-text">
-                        Precio a Pagar: <span id="res-final"></span>
-                    </p>
-                    <p id="alerta-presupuesto" class="alerta hidden">
-                        ⚠️ El juego excede mi presupuesto actual.
-                    </p>
+    <section id="pedido" class="section-form">
+        <div class="container">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h3>Nueva Solicitud</h3>
+                    <p>Completa los datos para calcular tu descuento final.</p>
                 </div>
-
-                <div class="res-col-right">
-                    <h4>DATOS TRANSFERENCIA</h4>
-                    <div class="bank-info">
-                        <p><span>Nombre:</span> Tomás Benjamin Alvarez</p>
-                        <p><span>RUT:</span> 22.566.397-1</p>
-                        <p><span>Banco:</span> Banco Estado</p>
-                        <p><span>Tipo:</span> Cuenta RUT</p>
-                        <p><span>N°:</span> 22566397</p>
-                        <p><span>Email:</span> tomas07wilson@gmail.com</p>
+                
+                <form id="gameForm">
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Tu Email</label>
+                            <input type="email" name="email" id="email" required placeholder="nombre@ejemplo.com">
+                        </div>
+                        <div class="input-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" name="nombre" required placeholder="Ej. Juan Pérez">
+                        </div>
                     </div>
-                </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>RUT</label>
+                            <input type="text" name="rut" required placeholder="12.345.678-9">
+                        </div>
+                        <div class="input-group">
+                            <label>Usuario Steam (Opcional)</label>
+                            <input type="text" name="steam_user" placeholder="ID o URL de perfil">
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="input-group">
+                        <label>Nombre del Juego</label>
+                        <input type="text" name="juego" required placeholder="Ej. Elden Ring">
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Precio Original (Steam)</label>
+                            <input 
+                                type="number" 
+                                id="precioSteam" 
+                                name="precio_original" 
+                                required 
+                                placeholder="Ej: 15000"
+                                min="1" 
+                                step="1"
+                            >
+                        </div>
+                        <div class="input-group">
+                            <label>Código Promocional</label>
+                            <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Código VIP (Opcional)">
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
+                    <input type="hidden" name="to_name" value="Admin Steam Pyme">
+
+                    <div id="resultado" class="result-container">
+                        <div class="result-pricing">
+                            <div class="price-row">
+                                <span>Precio Steam:</span>
+                                <span id="res-original" class="strikethrough">$0</span>
+                            </div>
+                            <div class="price-row final">
+                                <span>A Pagar:</span>
+                                <span id="res-final">$0</span>
+                            </div>
+                            <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
+                        </div>
+
+                        <div class="bank-details">
+                            <h4>Datos para Transferencia</h4>
+                            <ul>
+                                <li><strong>Banco:</strong> Banco Estado (Cuenta RUT)</li>
+                                <li><strong>Titular:</strong> Tomás Benjamin Alvarez</li>
+                                <li><strong>RUT:</strong> 22.566.397-1</li>
+                                <li><strong>N° Cuenta:</strong> 22566397</li>
+                                <li><strong>Email:</strong> tomas07wilson@gmail.com</li>
+                            </ul>
+                            <p class="note-comprobante" id="mensaje-comprobante" style="display:none;">* Por favor adjunta el comprobante al enviar el correo.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary btn-calc" onclick="calcularDescuento()">Calcular Precio</button>
+                        <button type="submit" class="btn btn-primary btn-send" id="btnEnviar" disabled>Enviar Pedido</button>
+                    </div>
+                </form>
             </div>
-            <p id="mensaje-comprobante" style="display: none; text-align: center; margin: 15px 0; color: #e2d9f3; font-weight: bold;">
-                (MANDAR CORREO CON COMPROBANTE ADJUNTADO)
-            </p>
-            <div class="btn-group">
-                <button type="button" class="btn-calc" onclick="calcularDescuento()">1. Calcular Descuento</button>
-                <button type="submit" class="btn-send" id="btnEnviar">2. Enviar Pedido</button>
-            </div>
-        </form>
+        </div>
     </section>
 
-    <footer id="contacto">
-        <p>¿Dudas?</p>
-        <p>📧 Contacto: tomas07wilson@gmail.com</p>
-        <p>📷 Instagram: @tomachu312</p>
-        <hr>
-        <p>&copy; 2024 Venta de Juegos HaitianDiscount</p>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 HaitianDiscount. Servicios Digitales.</p>
+            <p class="contact-info">tomas07wilson@gmail.com</p>
+        </div>
     </footer>
 
     <script type="module" src="script.js"></script>
 
-    <a href="https://wa.me/56948943497?text=Hola%20HaitianDiscount,%20tengo%20una%20duda%20sobre%20un%20juego" class="btn-wsp" target="_blank" title="Chat WhatsApp">
-        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">
-            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+    <a href="https://wa.me/56948943497?text=Hola%20HaitianDiscount" class="whatsapp-float" target="_blank">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/>
         </svg>
     </a>
 
