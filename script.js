@@ -27,7 +27,7 @@ const saldoRef = ref(db, 'presupuesto');
 const SERVICE_ID = 'service_jke4epd';    
 const TEMPLATE_ID = 'template_0l9w69b'; 
 
-// Variables DOM
+// Variables
 let presupuestoActual = 0; 
 const displayTope = document.getElementById('tope-dinero');
 const inputPrecioFinal = document.getElementById('precioFinalInput');
@@ -46,7 +46,7 @@ onValue(saldoRef, (snapshot) => {
     setTimeout(() => displayTope.style.color = '#00ff88', 300);
 });
 
-// --- LÓGICA INTELIGENTE DE DESCUENTO (CORREGIDA) ---
+// --- LÓGICA INTELIGENTE DE DESCUENTO ---
 window.calcularDescuento = function() {
     const precioInput = document.getElementById('precioSteam').value;
     const codigoInput = document.getElementById('codigoInvitado').value.trim(); 
@@ -58,18 +58,15 @@ window.calcularDescuento = function() {
 
     const precio = parseFloat(precioInput);
 
-    // === CORRECCIÓN AQUÍ ===
-    // Si NO escribió ningún código, calculamos normal y salimos.
+    // CASO 1: No escribió código (Calculamos normal y mostramos)
     if (codigoInput === "") {
         const descuento = 0.30; 
         const precioFinal = Math.round(precio * (1 - descuento));
-        
-        // Mostrar resultados
-        mostrarResultadosUI(precio, precioFinal, false); // false = no es VIP
-        return; // Detenemos la función aquí para no molestar a Firebase
+        mostrarResultadosUI(precio, precioFinal, false);
+        return; 
     }
 
-    // Si SÍ escribió algo, verificamos en la base de datos
+    // CASO 2: Escribió código (Verificamos en DB)
     Swal.fire({
         title: 'Verificando código...',
         allowOutsideClick: false,
@@ -78,7 +75,6 @@ window.calcularDescuento = function() {
 
     const dbRef = ref(db);
 
-    // Buscamos el código específico
     get(child(dbRef, `codigos_vip/${codigoInput}`)).then((snapshot) => {
         Swal.close();
 
@@ -86,15 +82,13 @@ window.calcularDescuento = function() {
         let esVip = false;
 
         if (snapshot.exists()) {
-            descuento = snapshot.val(); // Toma el valor real (ej: 0.35)
+            descuento = snapshot.val(); 
             esVip = true;
         } else {
             Swal.fire('Código no válido', 'Se aplicará el descuento normal del 30%', 'info');
         }
 
         const precioFinal = Math.round(precio * (1 - descuento));
-        
-        // Mostrar resultados y alerta VIP si corresponde
         mostrarResultadosUI(precio, precioFinal, esVip, descuento);
 
     }).catch((error) => {
@@ -104,9 +98,14 @@ window.calcularDescuento = function() {
     });
 }
 
-// Función auxiliar para no repetir código visual
+// --- FUNCIÓN VISUAL CORREGIDA ---
 function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
-    document.getElementById('resultado').style.display = 'block';
+    const resultadoDiv = document.getElementById('resultado');
+    
+    // >>> AQUÍ ESTABA EL ERROR ANTES: <<<
+    // Cambiamos 'block' por 'flex' para que respete las columnas una al lado de la otra.
+    resultadoDiv.style.display = 'flex'; 
+
     document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
     document.getElementById('res-final').innerText = formatoDinero(precioFinal);
     inputPrecioFinal.value = formatoDinero(precioFinal);
@@ -120,12 +119,11 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
             timer: 2000,
             showConfirmButton: false
         });
-        document.getElementById('res-final').style.color = '#ffd700'; // Dorado
+        document.getElementById('res-final').style.color = '#ffd700'; 
     } else {
-        document.getElementById('res-final').style.color = '#00ff88'; // Verde normal
+        document.getElementById('res-final').style.color = '#00ff88'; 
     }
 
-    // Validar presupuesto
     if (precioFinal > presupuestoActual) {
         document.getElementById('alerta-presupuesto').style.display = 'block';
         btnEnviar.classList.remove('active'); 
@@ -166,7 +164,7 @@ form.addEventListener('submit', function(event) {
     });
 });
 
-// --- ADMIN (MODALES) ---
+// --- ADMIN ---
 document.getElementById('btn-login-admin').addEventListener('click', async (e) => {
     e.preventDefault(); 
     const { value: formValues } = await Swal.fire({

@@ -17,6 +17,53 @@ body {
     color: var(--text-main);
 }
 
+/* NAV */
+nav {
+    background-color: var(--brand-purple);
+    padding: 10px 20px; 
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    border-bottom: 2px solid var(--accent-cyan);
+    box-shadow: 0 0 15px rgba(160, 68, 255, 0.4);
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.logo {
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px var(--accent-cyan);
+    white-space: nowrap;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+nav a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+nav a:hover { color: var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan); }
+
 /* SECCIONES */
 section {
     padding: 100px 20px 60px;
@@ -116,18 +163,74 @@ button:active { transform: scale(0.98); }
 .btn-send.active { opacity: 1; pointer-events: auto; box-shadow: 0 0 20px rgba(160, 68, 255, 0.4); }
 .btn-send.active:hover { filter: brightness(1.1); }
 
-/* RESULTADOS */
+/* RESULTADOS (DIVIDIDO EN 2 COLUMNAS) */
 #resultado {
     margin-top: 25px;
     padding: 20px;
     background-color: rgba(0,0,0,0.2);
-    border-left: 4px solid var(--accent-green);
+    border-left: 4px solid var(--accent-green); 
     border-radius: 4px;
-    display: none;
+    display: none; 
+    
+    /* Flexbox para dividir en columnas */
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
 }
 
-.precio-final-text { color: var(--accent-green); font-size: 1.4rem; font-weight: bold; }
-.alerta { color: #ff4444; background-color: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; border: 1px solid #ff4444; }
+/* Columna Izquierda (Precios) */
+.res-col-left {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra el bloque verticalmente */
+    gap: 2px; /* Espacio muy pequeño entre los textos */
+}
+
+/* Quitamos márgenes por defecto a los párrafos de esta columna */
+.res-col-left p {
+    margin: 0; 
+    line-height: 1.2; /* Ayuda a que las líneas no sean tan altas */
+}
+
+/* Ajustamos el texto del precio final */
+.precio-final-text {
+    color: var(--accent-green);
+    font-size: 1.5rem; /* Un poco más grande para destacar */
+    font-weight: bold;
+    margin-top: 5px; /* Solo un poquito de separación con el de arriba */
+}
+
+/* Columna Derecha (Datos Bancarios) */
+.res-col-right {
+    flex: 1;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 20px;
+    font-size: 0.85rem;
+}
+
+.res-col-right h4 {
+    margin: 0 0 10px 0;
+    color: var(--accent-cyan);
+    border-bottom: 1px solid var(--brand-purple);
+    display: inline-block;
+}
+
+.bank-info p {
+    margin: 4px 0;
+    color: #ccc;
+    display: flex;
+    justify-content: space-between;
+}
+
+.bank-info span {
+    font-weight: bold;
+    color: var(--text-main);
+    margin-right: 10px;
+}
+
+.precio-final-text { color: var(--accent-green); font-size: 1.4rem; font-weight: bold; margin: 10px 0; }
+.alerta { color: #ff4444; background-color: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 4px; margin-top: 10px; border: 1px solid #ff4444; font-size: 0.9rem; }
 .hidden { display: none; }
 
 /* FOOTER */
@@ -156,55 +259,20 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
 }
 div:where(.swal2-icon).swal2-success { border-color: var(--accent-green) !important; color: var(--accent-green) !important; }
 
-/* NAV */
-nav {
-    background-color: var(--brand-purple);
-    padding: 10px 20px; 
-    position: fixed;
-    width: 100%;
-    top: 0;
-    left: 0;
-    border-bottom: 2px solid var(--accent-cyan);
-    box-shadow: 0 0 15px rgba(160, 68, 255, 0.4);
-    z-index: 1000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-sizing: border-box;
-}
-
-.logo {
-    color: white;
-    font-weight: bold;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 0 5px var(--accent-cyan);
-    white-space: nowrap;
-}
-
-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-nav a {
-    color: var(--text-main);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-nav a:hover { color: var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan); }
-
+/* MEDIA QUERIES (RESPONSIVO) */
 @media (max-width: 768px) {
     nav { flex-direction: column; padding: 15px; }
     nav ul { margin-top: 10px; justify-content: center; width: 100%; }
     .logo { margin-bottom: 5px; }
+}
+
+@media (max-width: 600px) {
+    #resultado { flex-direction: column; }
+    .res-col-right {
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-left: 0;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
 }
