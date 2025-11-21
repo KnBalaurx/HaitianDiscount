@@ -106,6 +106,8 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     // Cambiamos 'block' por 'flex' para que respete las columnas una al lado de la otra.
     resultadoDiv.style.display = 'flex'; 
 
+    document.getElementById('mensaje-comprobante').style.display = 'block';
+
     document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
     document.getElementById('res-final').innerText = formatoDinero(precioFinal);
     inputPrecioFinal.value = formatoDinero(precioFinal);
@@ -154,6 +156,7 @@ form.addEventListener('submit', function(event) {
                 Swal.fire('¡Éxito!', 'Pedido enviado.', 'success');
                 form.reset();
                 document.getElementById('resultado').style.display = 'none';
+                document.getElementById('mensaje-comprobante').style.display = 'none';
                 btnEnviar.classList.remove('active');
             });
         } else {
