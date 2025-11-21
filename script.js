@@ -2,8 +2,8 @@
 let presupuestoActual = 50000; 
 
 // TUS KEYS DE EMAILJS
-const SERVICE_ID = 'service_896cvbo';   
-const TEMPLATE_ID = 'template_s5dbw9i'; 
+const SERVICE_ID = 'service_jke4epd';   
+const TEMPLATE_ID = 'template_0l9w69b'; 
 
 // Referencias
 const displayTope = document.getElementById('tope-dinero');
