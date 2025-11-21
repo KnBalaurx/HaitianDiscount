@@ -1,5 +1,5 @@
 /* CONFIGURACIÓN INICIAL */
-let presupuestoActual = 50000; 
+let presupuestoActual = 5000; 
 
 // TUS KEYS DE EMAILJS
 const SERVICE_ID = 'service_jke4epd';   
