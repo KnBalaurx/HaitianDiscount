@@ -70,7 +70,6 @@ onValue(estadoRef, (snapshot) => {
     } else {
         tiendaAbierta = true;
         btnEnviar.innerText = "Enviar Pedido";
-        // Ojo: btnEnviar sigue disabled hasta que calculen precio, controlamos eso en logic
         if(btnCalc) btnCalc.disabled = false;
     }
 });
@@ -79,25 +78,20 @@ onValue(estadoRef, (snapshot) => {
 // LÓGICA DE NEGOCIO
 // ==============================================================
 
-// --- VALIDACIÓN DE INPUT DE PRECIO (NUEVO) ---
+// --- VALIDACIÓN DE INPUT DE PRECIO ---
 const inputPrecio = document.getElementById('precioSteam');
 
 inputPrecio.addEventListener('input', function() {
-    // 1. Si el valor empieza con 0, lo limpiamos
     if (this.value.startsWith('0')) {
         this.value = this.value.substring(1);
     }
-    // 2. Si es negativo o tiene caracteres inválidos (e, +, -), limpiamos
     if (this.value < 0) {
         this.value = Math.abs(this.value);
     }
-    // 3. Asegurar que no esté vacío para evitar errores visuales
     if (this.value === '') return;
 });
 
-// Validar también que no peguen textos o signos raros
 inputPrecio.addEventListener('keydown', function(e) {
-    // Prevenir signo menos (-) y el punto (.) si solo quieres enteros
     if (e.key === '-' || e.key === '.' || e.key === ',') {
         e.preventDefault();
     }
@@ -143,7 +137,7 @@ window.calcularDescuento = function() {
         if (snapshot.exists()) {
             descuento = snapshot.val(); 
             esVip = true;
-            inputCodigoElem.classList.add('vip-active'); // Clase CSS dorada
+            inputCodigoElem.classList.add('vip-active'); 
         } else {
             Swal.fire('Código inválido', 'Se aplicará el descuento estándar.', 'info');
         }
@@ -160,7 +154,7 @@ window.calcularDescuento = function() {
 
 function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
     const resultadoDiv = document.getElementById('resultado');
-    resultadoDiv.style.display = 'block'; // Mostrar bloque
+    resultadoDiv.style.display = 'block'; 
     
     const msjComprobante = document.getElementById('mensaje-comprobante');
     if(msjComprobante) msjComprobante.style.display = 'block';
@@ -171,7 +165,6 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     resFinalElem.innerText = formatoDinero(precioFinal);
     inputPrecioFinal.value = formatoDinero(precioFinal);
 
-    // Estilo VIP en texto
     if (esVip) {
         resFinalElem.classList.add('text-vip');
         const porcentaje = Math.round(descuentoValor * 100);
@@ -193,7 +186,7 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
         btnEnviar.disabled = true;
     } else {
         alerta.classList.add('hidden');
-        btnEnviar.disabled = false; // Habilitar botón
+        btnEnviar.disabled = false; 
     }
 }
 
@@ -229,7 +222,7 @@ form.addEventListener('submit', function(event) {
 });
 
 // ==============================================================
-// ADMIN PANEL (Simplificado para tema claro)
+// ADMIN PANEL 
 // ==============================================================
 document.getElementById('btn-login-admin').addEventListener('click', async (e) => {
     e.preventDefault(); 
@@ -307,3 +300,36 @@ async function gestionarEstadoTienda() {
         Swal.fire('Listo', `Tienda ${nuevoEstado}`, 'success');
     }
 }
+
+// ==============================================================
+// 5. MODO OSCURO (LOGICA)
+// ==============================================================
+const btnTheme = document.getElementById('theme-toggle');
+const body = document.body;
+
+// Iconos SVG
+const iconSun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>';
+const iconMoon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>';
+
+// Cargar preferencia guardada
+const currentTheme = localStorage.getItem('theme');
+if (currentTheme === 'dark') {
+    body.classList.add('dark-mode');
+    btnTheme.innerHTML = iconSun; // Mostrar sol para cambiar a claro
+} else {
+    btnTheme.innerHTML = iconMoon; // Mostrar luna para cambiar a oscuro
+}
+
+// Evento Click
+btnTheme.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    
+    // Cambiar icono y guardar
+    if (body.classList.contains('dark-mode')) {
+        localStorage.setItem('theme', 'dark');
+        btnTheme.innerHTML = iconSun;
+    } else {
+        localStorage.setItem('theme', 'light');
+        btnTheme.innerHTML = iconMoon;
+    }
+});

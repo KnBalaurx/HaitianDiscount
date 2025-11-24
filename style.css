@@ -1,20 +1,37 @@
 /* 1. VARIABLES Y RESET */
 :root {
-    --primary: #1e293b;       /* Azul Oscuro Pizarra (Texto fuerte) */
-    --accent: #2563eb;        /* Azul Royal (Botones y énfasis) */
+    --primary: #1e293b;       
+    --accent: #2563eb;        
     --accent-hover: #1d4ed8;
-    --bg-body: #f8fafc;       /* Gris muy claro (Fondo) */
+    --bg-body: #f8fafc;       
     --bg-card: #ffffff;
-    --text-main: #334155;     /* Gris medio */
+    --text-main: #334155;     
     --text-light: #64748b;
     --border: #e2e8f0;
     --success: #10b981;
     --danger: #ef4444;
-    --vip-gold: #d97706;      /* Dorado oscuro elegante, no amarillo */
+    --vip-gold: #d97706;      
     
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --radius: 12px;
+    --nav-bg: rgba(255, 255, 255, 0.9); /* Nueva variable para navbar */
+}
+
+/* --- MODO OSCURO --- */
+body.dark-mode {
+    --primary: #f1f5f9;       /* Texto principal claro */
+    --accent: #3b82f6;        /* Azul un poco más brillante para fondo oscuro */
+    --accent-hover: #60a5fa;
+    --bg-body: #0f172a;       /* Fondo muy oscuro (Slate 900) */
+    --bg-card: #1e293b;       /* Tarjetas oscuras (Slate 800) */
+    --text-main: #cbd5e1;     /* Texto secundario claro */
+    --text-light: #94a3b8;    /* Texto terciario */
+    --border: #334155;        /* Bordes oscuros */
+    --vip-gold: #fbbf24;      /* Dorado más brillante */
+    --nav-bg: rgba(15, 23, 42, 0.9); /* Navbar oscuro */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,6 +42,7 @@ body {
     color: var(--text-main);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s, color 0.3s; /* Transición suave */
 }
 
 /* UTILS */
@@ -34,21 +52,40 @@ body {
 
 /* 2. NAVBAR */
 .navbar {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--nav-bg);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 100;
     padding: 15px 0;
+    transition: background 0.3s, border-color 0.3s;
 }
 .nav-container { display: flex; justify-content: space-between; align-items: center; }
 .brand { font-weight: 700; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
 .brand .dot { color: var(--accent); }
-.nav-links { list-style: none; display: flex; gap: 25px; }
+.nav-links { list-style: none; display: flex; gap: 25px; align-items: center; }
 .nav-links a { text-decoration: none; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
 .nav-links a:hover { color: var(--accent); }
 .admin-link { color: var(--text-light) !important; font-size: 0.8rem !important; }
+
+/* BOTÓN TOGGLE MODO OSCURO */
+.theme-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    width: 36px;
+    height: 36px;
+}
+.theme-btn:hover { background: var(--border); color: var(--primary); }
+.theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
 /* 3. HERO */
 .hero { text-align: center; padding: 80px 0 40px; }
@@ -69,6 +106,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    transition: background 0.3s, border-color 0.3s;
 }
 .budget-info .label { text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--text-light); letter-spacing: 1px; }
 .budget-info h2 { font-size: 2.5rem; font-weight: 700; color: var(--primary); margin: 5px 0; letter-spacing: -1px; }
@@ -81,8 +119,13 @@ body {
     border-radius: var(--radius);
     box-shadow: var(--shadow-md);
     overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
 }
-.form-header { background: #f1f5f9; padding: 25px 30px; border-bottom: 1px solid var(--border); }
+.form-header { 
+    background: rgba(0,0,0,0.03); /* Transparencia para que sirva en dark y light */
+    padding: 25px 30px; 
+    border-bottom: 1px solid var(--border); 
+}
 .form-header h3 { color: var(--primary); margin-bottom: 5px; }
 .form-header p { font-size: 0.9rem; color: var(--text-light); margin: 0; }
 
@@ -96,21 +139,21 @@ input {
     font-size: 0.95rem;
     border: 1px solid var(--border);
     border-radius: 6px;
-    color: var(--primary);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: #fff;
+    color: var(--primary); /* Texto del input adaptativo */
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
+    background: var(--bg-body); /* Fondo del input adaptativo */
     font-family: 'Inter', sans-serif;
 }
 input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-input::placeholder { color: #cbd5e1; }
+input::placeholder { color: var(--text-light); opacity: 0.5; }
 
 .divider { height: 1px; background: var(--border); margin: 20px 0 25px; }
 
 /* RESULTADOS */
 .result-container {
-    display: none; /* Se activa con JS */
+    display: none; 
     margin-top: 10px;
-    background: #f8fafc;
+    background: rgba(0,0,0,0.03); /* Adaptativo */
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 20px;
@@ -126,7 +169,7 @@ input::placeholder { color: #cbd5e1; }
 .bank-details li { margin-bottom: 4px; }
 .note-comprobante { margin-top: 15px; font-size: 0.8rem; color: var(--accent); font-weight: 500; text-align: center;}
 
-.alert-badge { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-top: 10px; background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+.alert-badge { display: inline-block; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-top: 10px; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
 .hidden { display: none; }
 
 /* BOTONES */
@@ -135,13 +178,13 @@ input::placeholder { color: #cbd5e1; }
     flex: 1; padding: 12px; border: none; border-radius: 6px;
     font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; font-family: 'Inter', sans-serif;
 }
-.btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
-.btn-secondary:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.btn-secondary { background: var(--bg-body); border: 1px solid var(--border); color: var(--text-main); }
+.btn-secondary:hover { background: var(--border); border-color: var(--text-light); }
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover { background: var(--accent-hover); }
-.btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
+.btn-primary:disabled { background: var(--border); color: var(--text-light); cursor: not-allowed; }
 
-/* ESTADOS VISUALES JS */
+/* ESTADOS VISUALES */
 .vip-active { border-color: var(--vip-gold) !important; color: var(--vip-gold) !important; }
 .text-vip { color: var(--vip-gold) !important; }
 
@@ -156,9 +199,17 @@ footer { margin-top: 60px; border-top: 1px solid var(--border); padding: 30px 0;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
     transition: transform 0.3s;
+    z-index: 999;
 }
 .whatsapp-float:hover { transform: translateY(-3px); }
 
-/* SWEETALERT CUSTOM (Minimalist) */
-div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 12px !important; padding: 2em !important; }
+/* SWEETALERT CUSTOM */
+div:where(.swal2-container) div:where(.swal2-popup) { 
+    border-radius: 12px !important; 
+    padding: 2em !important; 
+    background: var(--bg-card) !important; 
+    color: var(--text-main) !important;
+}
 div:where(.swal2-title) { font-size: 1.4rem !important; color: var(--primary) !important; }
+div:where(.swal2-html-container) { color: var(--text-light) !important; }
+div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg-body) !important; border-color: var(--border) !important;}
