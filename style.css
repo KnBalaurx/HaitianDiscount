@@ -213,3 +213,41 @@ div:where(.swal2-container) div:where(.swal2-popup) {
 div:where(.swal2-title) { font-size: 1.4rem !important; color: var(--primary) !important; }
 div:where(.swal2-html-container) { color: var(--text-light) !important; }
 div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg-body) !important; border-color: var(--border) !important;}
+
+/* --- RESPONSIVE MOBILE (Mejoras para Celular) --- */
+@media (max-width: 768px) {
+    
+    /* 1. Ajustar el contenedor del menú */
+    .nav-container {
+        flex-direction: column; /* Pone el logo arriba y los links abajo */
+        gap: 15px;              /* Espacio entre el logo y los links */
+    }
+
+    /* 2. Ajustar los enlaces */
+    .nav-links {
+        width: 100%;
+        justify-content: center; /* Centra los enlaces */
+        gap: 20px;               /* Espacio cómodo entre palabras */
+        padding-bottom: 5px;
+    }
+
+    /* 3. Reducir un poco el tamaño de la letra de los enlaces para que quepan bien */
+    .nav-links a {
+        font-size: 0.85rem; 
+    }
+
+    /* 4. Ajustar el título principal (Hero) para que respire */
+    .hero {
+        padding-top: 40px;    /* Ajuste visual */
+        padding-bottom: 30px;
+    }
+
+    .hero h1 {
+        font-size: 2rem;      /* Título un poco más chico en celular para que no ocupe toda la pantalla */
+    }
+
+    /* 5. Ajustar el contenedor general para que tenga margen a los lados */
+    .container {
+        padding: 0 25px;      /* Más margen a los costados para que no se pegue al borde del celular */
+    }
+}
