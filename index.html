@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Compra juegos de Steam hasta un 30% más baratos en Chile. Servicio seguro, rápido y con medio de pago local (Cuenta RUT).">
+    <meta name="keywords" content="Steam Chile, juegos baratos, descuento steam, cuenta rut, juegos digitales">
+    
     <title>HaitianDiscount | Juegos Digitales</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,43 +73,56 @@
                 </div>
                 
                 <form id="gameForm">
+                    
+                    <div class="input-group" style="position: relative;">
+                        <label for="steamUrlInput">Pegar Link de Steam (Autocompletar)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="url" id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
+                            <button type="button" id="btnBuscarSteam" class="btn btn-primary" style="width: auto; padding: 0 15px;" title="Buscar datos del juego">
+                                🔍
+                            </button>
+                        </div>
+                        <small style="color: var(--text-light); font-size: 0.8rem;">Pega el link y presiona la lupa para llenar nombre y precio automáticamente.</small>
+                    </div>
+
+                    <div class="divider"></div>
                     <div class="grid-2">
                         <div class="input-group">
-                            <label>Tu Email</label>
+                            <label for="email">Tu Email</label>
                             <input type="email" name="email" id="email" required placeholder="nombre@ejemplo.com">
                         </div>
                         <div class="input-group">
-                            <label>Nombre Completo</label>
-                            <input type="text" name="nombre" required placeholder="Ej. Juan Pérez">
+                            <label for="nombre">Nombre Completo</label>
+                            <input type="text" name="nombre" id="nombre" required placeholder="Ej. Juan Pérez">
                         </div>
                     </div>
 
                     <div class="grid-2">
                         <div class="input-group">
-                            <label>RUT</label>
-                            <input type="text" name="rut" required placeholder="12.345.678-9">
+                            <label for="rut">RUT</label>
+                            <input type="text" name="rut" id="rut" required placeholder="12.345.678-9">
                         </div>
                         <div class="input-group">
-                            <label>Usuario Steam (Opcional)</label>
-                            <input type="text" name="steam_user" placeholder="ID o URL de perfil">
+                            <label for="steam_user">Usuario Steam (Opcional)</label>
+                            <input type="text" name="steam_user" id="steam_user" placeholder="ID o URL de perfil">
                         </div>
                     </div>
 
                     <div class="input-group">
-                        <label>Detalles Adicionales (Opcional)</label>
-                        <input type="text" name="detalles" placeholder="Ej. Edición Deluxe, DLC específico, etc.">
+                        <label for="detalles">Detalles Adicionales (Opcional)</label>
+                        <input type="text" name="detalles" id="detalles" placeholder="Ej. Edición Deluxe, DLC específico, etc.">
                     </div>
 
                     <div class="divider"></div>
 
                     <div class="input-group">
-                        <label>Nombre del Juego</label>
-                        <input type="text" name="juego" required placeholder="Ej. Elden Ring">
+                        <label for="juego">Nombre del Juego</label>
+                        <input type="text" name="juego" id="juego" required placeholder="Ej. Elden Ring">
                     </div>
 
                     <div class="grid-2">
                         <div class="input-group">
-                            <label>Precio Original (Steam)</label>
+                            <label for="precioSteam">Precio Original (Steam)</label>
                             <input 
                                 type="number" 
                                 id="precioSteam" 
@@ -118,7 +134,7 @@
                             >
                         </div>
                         <div class="input-group">
-                            <label>Código Promocional</label>
+                            <label for="codigoInvitado">Código Promocional</label>
                             <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Código VIP (Opcional)">
                         </div>
                     </div>
@@ -153,7 +169,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary btn-calc" onclick="calcularDescuento()">Calcular Precio</button>
+                        <button type="button" class="btn btn-secondary btn-calc" id="btnCalcular">Calcular Precio</button>
                         <button type="submit" class="btn btn-primary btn-send" id="btnEnviar" disabled>Enviar Pedido</button>
                     </div>
                 </form>

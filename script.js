@@ -1,7 +1,7 @@
 // 1. IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, runTransaction, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getDatabase, ref, onValue, runTransaction, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // CONFIGURACIÓN FIREBASE
 const firebaseConfig = {
@@ -31,11 +31,17 @@ const displayTope = document.getElementById('tope-dinero');
 const inputPrecioFinal = document.getElementById('precioFinalInput');
 const form = document.getElementById('gameForm');
 const btnEnviar = document.getElementById('btnEnviar');
+const btnCalc = document.querySelector('.btn-calc'); 
+
+// Listener para el botón calcular
+if(btnCalc) {
+    btnCalc.addEventListener('click', calcularDescuento);
+}
 
 // Formateador Dinero
 const formatoDinero = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
 
-// --- ACTUALIZACIÓN SALDO ---
+// --- ACTUALIZACIÓN SALDO (Listener) ---
 onValue(saldoRef, (snapshot) => {
     const data = snapshot.val();
     presupuestoActual = data || 0;
@@ -50,13 +56,11 @@ let tiendaAbierta = true;
 
 onValue(estadoRef, (snapshot) => {
     const estado = snapshot.val(); 
-    const btnCalc = document.querySelector('.btn-calc');
     
     if (estado === 'cerrado') {
         tiendaAbierta = false;
         btnEnviar.disabled = true;
         btnEnviar.innerText = "CERRADO TEMPORALMENTE";
-        
         if(btnCalc) btnCalc.disabled = true;
 
         Swal.fire({
@@ -75,37 +79,100 @@ onValue(estadoRef, (snapshot) => {
 });
 
 // ==============================================================
-// LÓGICA DE NEGOCIO
+// NUEVA FUNCIONALIDAD: BUSCADOR STEAM POR URL (CORREGIDO)
+// ==============================================================
+const btnBuscarSteam = document.getElementById('btnBuscarSteam');
+const inputUrlSteam = document.getElementById('steamUrlInput');
+
+if(btnBuscarSteam && inputUrlSteam) {
+    btnBuscarSteam.addEventListener('click', async () => {
+        const url = inputUrlSteam.value;
+        const regex = /app\/(\d+)/; // Busca el ID en la URL (ej: /app/12456/)
+        const match = url.match(regex);
+
+        if (!match) {
+            Swal.fire('Link no válido', 'Asegúrate de pegar un enlace de la tienda de Steam (store.steampowered.com/app/...)', 'warning');
+            return;
+        }
+
+        const appId = match[1];
+
+        // UI Loading
+        Swal.fire({ title: 'Buscando en Steam...', didOpen: () => Swal.showLoading() });
+
+        try {
+            // Usamos AllOrigins como proxy para evitar CORS y pedimos precios en CLP (&cc=cl)
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`)}`;
+            
+            const response = await fetch(proxyUrl);
+            const dataWrapper = await response.json();
+            const steamData = JSON.parse(dataWrapper.contents);
+
+            if (steamData[appId] && steamData[appId].success) {
+                const gameInfo = steamData[appId].data;
+                
+                // 1. Llenar Nombre
+                const inputJuego = document.getElementById('juego');
+                if(inputJuego) inputJuego.value = gameInfo.name;
+
+                // 2. Llenar Precio
+                const inputPrecio = document.getElementById('precioSteam');
+                
+                if (gameInfo.is_free) {
+                    inputPrecio.value = 0;
+                    Swal.fire('Juego Gratuito', 'Este juego es gratis en Steam.', 'info');
+                } else if (gameInfo.price_overview) {
+                    
+                    // CORRECCIÓN APLICADA AQUÍ: Usamos .final (Precio con descuento)
+                    let precio = gameInfo.price_overview.final / 100;
+                    
+                    inputPrecio.value = precio;
+                    
+                    Swal.close();
+                    const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+                    
+                    // Detectar si hay descuento
+                    if(gameInfo.price_overview.discount_percent > 0) {
+                        toast.fire({ icon: 'success', title: `¡Oferta detectada! (-${gameInfo.price_overview.discount_percent}%)` });
+                    } else {
+                        toast.fire({ icon: 'success', title: 'Datos cargados correctamente' });
+                    }
+
+                } else {
+                    Swal.fire('Precio no disponible', 'No pudimos obtener el precio en CLP. Ingrésalo manualmente.', 'warning');
+                }
+            } else {
+                throw new Error('Juego no encontrado en la respuesta API');
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'No se pudo obtener la información automáticamente. Por favor ingresa los datos manual.', 'error');
+        }
+    });
+}
+
+// ==============================================================
+// LÓGICA DE NEGOCIO Y CÁLCULOS
 // ==============================================================
 
-// --- VALIDACIÓN DE INPUT DE PRECIO ---
+// Validación visual input precio
 const inputPrecio = document.getElementById('precioSteam');
+if(inputPrecio) {
+    inputPrecio.addEventListener('input', function() {
+        if (this.value.startsWith('0') && this.value.length > 1) this.value = this.value.substring(1);
+        if (this.value < 0) this.value = Math.abs(this.value);
+    });
+}
 
-inputPrecio.addEventListener('input', function() {
-    if (this.value.startsWith('0')) {
-        this.value = this.value.substring(1);
-    }
-    if (this.value < 0) {
-        this.value = Math.abs(this.value);
-    }
-    if (this.value === '') return;
-});
-
-inputPrecio.addEventListener('keydown', function(e) {
-    if (e.key === '-' || e.key === '.' || e.key === ',') {
-        e.preventDefault();
-    }
-});
-
-
-window.calcularDescuento = function() {
+// Función Principal: Calcular
+function calcularDescuento() {
     if (!tiendaAbierta) {
         Swal.fire('Tienda Cerrada', 'Estamos reponiendo stock, vuelve pronto.', 'warning');
         return;
     }
 
     const precioInput = document.getElementById('precioSteam').value;
-    const codigoInput = document.getElementById('codigoInvitado').value.trim(); 
+    const codigoInput = document.getElementById('codigoInvitado').value.trim().toUpperCase(); 
     const inputCodigoElem = document.getElementById('codigoInvitado'); 
 
     // Reset visual
@@ -127,7 +194,7 @@ window.calcularDescuento = function() {
     }
 
     // CASO 2: Con código
-    Swal.fire({ title: 'Verificando...', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Verificando cupón...', didOpen: () => Swal.showLoading() });
 
     get(child(ref(db), `codigos_vip/${codigoInput}`)).then((snapshot) => {
         Swal.close();
@@ -152,6 +219,7 @@ window.calcularDescuento = function() {
     });
 }
 
+// Mostrar resultados en pantalla
 function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
     const resultadoDiv = document.getElementById('resultado');
     resultadoDiv.style.display = 'block'; 
@@ -200,12 +268,26 @@ form.addEventListener('submit', function(event) {
 
     Swal.fire({ title: 'Enviando...', text: 'No cierres esta ventana', didOpen: () => Swal.showLoading() });
 
+    // Restar saldo de Firebase
     runTransaction(saldoRef, (saldoActual) => {
         const actual = saldoActual || 0;
         if (actual >= costoJuego) return actual - costoJuego; 
-        else return; 
+        else return; // Aborta si no hay saldo
     }).then((result) => {
         if (result.committed) {
+            
+            // Opcional: Guardar orden en BD (Descomentar si quieres historial)
+            /*
+            const nuevaOrden = push(ref(db, 'ordenes'));
+            set(nuevaOrden, {
+                fecha: new Date().toISOString(),
+                email: form.email.value,
+                juego: form.juego.value,
+                total: costoJuego
+            });
+            */
+
+            // Enviar Email
             emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, this).then(() => {
                 Swal.fire('¡Solicitud Enviada!', 'Revisa tu correo para los pasos finales.', 'success');
                 form.reset();
@@ -231,20 +313,17 @@ const body = document.body;
 const iconSun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>';
 const iconMoon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>';
 
-// Cargar preferencia guardada
+// Cargar preferencia
 const currentTheme = localStorage.getItem('theme');
 if (currentTheme === 'dark') {
     body.classList.add('dark-mode');
-    btnTheme.innerHTML = iconSun; // Mostrar sol para cambiar a claro
+    btnTheme.innerHTML = iconSun;
 } else {
-    btnTheme.innerHTML = iconMoon; // Mostrar luna para cambiar a oscuro
+    btnTheme.innerHTML = iconMoon;
 }
 
-// Evento Click
 btnTheme.addEventListener('click', () => {
     body.classList.toggle('dark-mode');
-    
-    // Cambiar icono y guardar
     if (body.classList.contains('dark-mode')) {
         localStorage.setItem('theme', 'dark');
         btnTheme.innerHTML = iconSun;
