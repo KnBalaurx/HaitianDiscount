@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | HaitianDiscount</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="content/logo.png">
+    
+    <link rel="stylesheet" href="admin.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>HaitianDiscount Admin</h2>
+            <p class="subtitle">Acceso restringido</p>
+            <form id="loginForm">
+                <input type="email" id="email" placeholder="Email Administrativo" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit" class="btn btn-primary">Entrar al Panel</button>
+            </form>
+        </div>
+    </div>
+
+    <nav class="admin-nav">
+        <div class="brand">Panel de Control</div>
+        <button id="btnLogout" class="btn btn-danger btn-sm">Cerrar Sesión</button>
+    </nav>
+
+    <div class="container" id="adminContent">
+        
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Estado de la Tienda</h3>
+                <div id="statusDisplay" class="big-text">Cargando...</div>
+                <div class="control-row">
+                    <button id="btnToggleTienda" class="btn btn-primary">Cambiar Estado</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Cupo Disponible (CLP)</h3>
+                <div id="budgetDisplay" class="big-text">$...</div>
+                <div class="control-row">
+                    <input type="number" id="newBudget" class="input-admin" placeholder="Nuevo monto">
+                    <button id="btnUpdateBudget" class="btn btn-primary">Actualizar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Gestión de Códigos VIP</h3>
+            <div class="vip-controls">
+                <input type="text" id="vipCodeName" class="input-admin" placeholder="Código (Ej: VERANO2025)">
+                <input type="number" id="vipDiscount" class="input-admin" placeholder="Descuento (0.10 a 0.90)" step="0.05" max="1">
+                <button id="btnAddVip" class="btn btn-primary">Crear Código</button>
+            </div>
+            
+            <table class="vip-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descuento</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="vipList">
+                    </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
