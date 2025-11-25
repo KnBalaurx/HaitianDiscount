@@ -7,7 +7,6 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="content/logo.png">
-    
     <link rel="stylesheet" href="admin.css">
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -60,7 +59,7 @@
                 <button id="btnAddVip" class="btn btn-primary">Crear Código</button>
             </div>
             
-            <table class="vip-table">
+            <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Código</th>
@@ -68,9 +67,28 @@
                         <th>Acción</th>
                     </tr>
                 </thead>
-                <tbody id="vipList">
-                    </tbody>
+                <tbody id="vipList"></tbody>
             </table>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h3>Historial de Pedidos Recientes</h3>
+            <div style="overflow-x: auto;">
+                <table class="admin-table orders-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Email / Rut</th>
+                            <th>Juego</th>
+                            <th>Total Pagado</th>
+                            <th>Estado</th> <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersList">
+                        <tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>

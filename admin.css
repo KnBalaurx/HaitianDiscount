@@ -1,4 +1,4 @@
-/* VARIABLES (Coherentes con tu sitio principal) */
+/* VARIABLES */
 :root {
     --primary: #1e293b;
     --accent: #2563eb;
@@ -11,136 +11,66 @@
     --radius: 12px;
 }
 
-body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg-body);
-    color: var(--text-main);
-    margin: 0;
-    padding: 0;
-}
+body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; }
 
-/* LOGIN OVERLAY */
-#login-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--primary);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.login-card {
-    background: white;
-    padding: 2rem;
-    border-radius: var(--radius);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-}
-
-.login-card .subtitle {
-    color: #64748b;
-    margin-bottom: 20px;
-}
-
-.login-card input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    box-sizing: border-box; /* Importante para que no se desborde */
-}
+/* LOGIN */
+#login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+.login-card { background: white; padding: 2rem; border-radius: var(--radius); width: 100%; max-width: 400px; text-align: center; }
+.login-card .subtitle { color: #64748b; margin-bottom: 20px; }
+.login-card input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
 
 /* BOTONES */
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.2s;
-    font-family: 'Inter', sans-serif;
-}
-
+.btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-family: 'Inter', sans-serif; }
 .btn-primary { background: var(--accent); color: white; width: 100%; }
 .btn-primary:hover { opacity: 0.9; }
-
 .btn-danger { background: var(--danger); color: white; }
 .btn-danger:hover { opacity: 0.9; }
-
 .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; }
 
 /* DASHBOARD */
-.admin-nav {
-    background: var(--bg-card);
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
+.admin-nav { background: var(--bg-card); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .brand { font-weight: 700; font-size: 1.2rem; color: var(--primary); }
+.container { max-width: 1000px; margin: 2rem auto; padding: 0 20px; display: none; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+.card { background: var(--bg-card); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px;}
+.card h3 { margin-top: 0; color: var(--text-main); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; }
+.card .big-text { font-size: 2rem; font-weight: 700; color: var(--primary); margin: 10px 0; }
 
-.container {
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 0 20px;
-    display: none; /* Se activa con JS al loguearse */
-}
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.card {
-    background: var(--bg-card);
-    padding: 20px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.card h3 {
-    margin-top: 0;
-    color: var(--text-main);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.7;
-}
-
-.card .big-text {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin: 10px 0;
-}
-
-/* CONTROLES Y INPUTS */
+/* CONTROLES */
 .control-row { display: flex; gap: 10px; margin-top: 15px; }
 .vip-controls { background: var(--bg-body); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;}
-
-.input-admin {
-    padding: 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    flex: 1;
-}
-
+.input-admin { padding: 8px; border: 1px solid var(--border); border-radius: 6px; flex: 1; }
 .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
 .status-open { background: #dcfce7; color: #166534; }
 .status-closed { background: #fee2e2; color: #991b1b; }
 
-/* TABLA */
-.vip-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-.vip-table th { text-align: left; padding: 10px; border-bottom: 2px solid var(--border); color: var(--text-main); font-size: 0.85rem; }
-.vip-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+/* TABLAS (GENÉRICO) */
+.admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+.admin-table th { text-align: left; padding: 12px 10px; border-bottom: 2px solid var(--border); color: var(--text-main); font-size: 0.85rem; background: var(--bg-body); }
+.admin-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+
+/* --- ESTILOS SELECT DE ESTADO (NUEVO) --- */
+.status-select {
+    padding: 6px 10px;
+    border-radius: 20px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    appearance: none; /* Quita la flecha por defecto en algunos navegadores */
+    text-align: center;
+    width: 100%;
+    min-width: 120px;
+}
+
+/* Colores dinámicos */
+.status-pendiente { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+.status-completado { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.status-cancelado { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+/* Responsive Table para móviles */
+@media (max-width: 600px) {
+    .orders-table th:nth-child(2), 
+    .orders-table td:nth-child(2) { display: none; } /* Ocultar Email en movil muy pequeño */
+}
