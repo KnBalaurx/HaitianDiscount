@@ -180,6 +180,7 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     const msjComprobante = document.getElementById('mensaje-comprobante');
     if(msjComprobante) msjComprobante.style.display = 'block';
 
+    // Importante: Aquí seteamos el texto que luego leeremos al enviar
     document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
     const resFinalElem = document.getElementById('res-final');
     resFinalElem.innerText = formatoDinero(precioFinal);
@@ -202,35 +203,44 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     }
 }
 
-// --- ENVIAR PEDIDO ---
+// --- ENVIAR PEDIDO (LÓGICA ACTUALIZADA) ---
 form.addEventListener('submit', function(event) {
     event.preventDefault(); 
     if (!tiendaAbierta || btnEnviar.disabled) return;
 
-    const precioStr = document.getElementById('res-final').innerText;
-    const costoJuego = parseInt(precioStr.replace(/\D/g, '')); 
+    // 1. OBTENER PRECIOS SEPARADOS
+    // Precio Steam (El que se debe descontar de TU cupo porque es lo que te cuesta a ti)
+    const precioSteamStr = document.getElementById('res-original').innerText;
+    const costoSteam = parseInt(precioSteamStr.replace(/\D/g, '')); 
+
+    // Precio Cliente (El que paga el cliente, se guarda en el historial)
+    const precioClienteStr = document.getElementById('res-final').innerText;
+    const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
     Swal.fire({ title: 'Procesando...', text: 'No cierres la ventana', didOpen: () => Swal.showLoading() });
 
+    // TRANSACCIÓN: Aquí usamos costoSteam (el precio de Steam) para descontar del cupo
     runTransaction(saldoRef, (saldoActual) => {
         const actual = saldoActual || 0;
-        if (actual >= costoJuego) return actual - costoJuego; 
+        // Verificamos si hay saldo suficiente para cubrir el costo real (Steam)
+        if (actual >= costoSteam) return actual - costoSteam; 
         else return; 
     }).then((result) => {
         if (result.committed) {
             
-            // --- 1. GUARDAR EN FIREBASE (NUEVO) ---
+            // --- GUARDAR EN FIREBASE ---
             const nuevaOrdenRef = push(ref(db, 'ordenes'));
             set(nuevaOrdenRef, {
                 fecha: new Date().toISOString(),
                 email: form.email.value,
-                rut: form.rut.value, // Guardamos RUT también
+                rut: form.rut.value, 
                 juego: form.juego.value,
-                precio_pagado: costoJuego,
+                precio_pagado: costoCliente, // Guardamos lo que pagó el CLIENTE
+                precio_steam: costoSteam,    // (Opcional) Guardamos cuánto costó en Steam
                 estado: 'pendiente'
             });
 
-            // --- 2. ENVIAR CORREO ---
+            // --- ENVIAR CORREO ---
             emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, this).then(() => {
                 Swal.fire('¡Pedido Recibido!', 'Revisa tu correo para el pago.', 'success');
                 form.reset();
@@ -238,7 +248,7 @@ form.addEventListener('submit', function(event) {
                 btnEnviar.disabled = true;
             });
         } else {
-            Swal.fire('Lo sentimos', 'Se acaba de agotar el cupo.', 'error');
+            Swal.fire('Lo sentimos', 'Se acaba de agotar el cupo disponible para cubrir el precio de Steam.', 'error');
         }
     }).catch((err) => {
         console.error(err);
