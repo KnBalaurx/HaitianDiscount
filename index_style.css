@@ -289,6 +289,24 @@ div:where(.swal2-title) { font-size: 1.4rem !important; color: var(--primary) !i
 div:where(.swal2-html-container) { color: var(--text-light) !important; }
 div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg-body) !important; border-color: var(--border) !important;}
 
+/* --- ESTILO BOTÓN ENEBA (MORADO) --- */
+.btn-eneba {
+    background: #a855f7; /* Morado base */
+    color: white;
+}
+
+.btn-eneba:hover {
+    background: #9333ea; /* Morado más oscuro al pasar el mouse */
+}
+
+/* Importante: Cuando esté deshabilitado, se pone gris igual que el de Steam */
+.btn-eneba:disabled {
+    background: var(--border); 
+    color: var(--text-light);
+    cursor: not-allowed;
+    opacity: 1;
+}
+
 /* RESPONSIVE MOBILE */
 @media (max-width: 768px) {
     .nav-container { flex-direction: column; gap: 15px; }
