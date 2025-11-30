@@ -1,9 +1,7 @@
-// 1. IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// CONFIGURACIÓN FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyAVQm_MUEWQaf7NXzna2r4Sgbl5SeGNOyM",
     authDomain: "haitiandiscount.firebaseapp.com",
@@ -15,11 +13,13 @@ const firebaseConfig = {
     measurementId: "G-EMVPQGPWTE"
 };
 
-// INICIALIZACIÓN
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app); 
-const saldoRef = ref(db, 'presupuesto');
+
+// REFERENCIAS ESPECÍFICAS DE ENEBA
+const saldoRef = ref(db, 'presupuesto_eneba');
+const estadoRef = ref(db, 'estado_eneba');
 
 // EMAILJS
 const SERVICE_ID = 'service_jke4epd';    
@@ -37,90 +37,34 @@ if(btnCalc) {
     btnCalc.addEventListener('click', calcularDescuento);
 }
 
-// Formateador Dinero
 const formatoDinero = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
 
-// --- ACTUALIZACIÓN SALDO ---
+// --- ACTUALIZACIÓN SALDO ENEBA ---
 onValue(saldoRef, (snapshot) => {
     const data = snapshot.val();
     presupuestoActual = data || 0;
     displayTope.innerText = formatoDinero(presupuestoActual);
 });
 
-// --- ESTADO TIENDA ---
-const estadoRef = ref(db, 'estado_tienda');
+// --- ESTADO TIENDA ENEBA ---
 let tiendaAbierta = true; 
-
-onValue(estadoRef, (snapshot) => {
-    const estado = snapshot.val(); 
+onValue(estadoRef, (snap) => {
+    const estado = snap.val(); 
     if (estado === 'cerrado') {
         tiendaAbierta = false;
         btnEnviar.disabled = true;
         btnEnviar.innerText = "CERRADO TEMPORALMENTE";
         if(btnCalc) btnCalc.disabled = true;
-        Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Tienda en Pausa', showConfirmButton: false, timer: 3000 });
+        Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Tienda Eneba en Pausa', showConfirmButton: false, timer: 3000 });
     } else {
         tiendaAbierta = true;
-        btnEnviar.innerText = "Enviar Pedido";
+        btnEnviar.innerText = "Enviar Pedido Eneba";
         if(btnCalc) btnCalc.disabled = false;
     }
 });
 
-// --- BUSCADOR STEAM ---
-const btnBuscarSteam = document.getElementById('btnBuscarSteam');
-const inputUrlSteam = document.getElementById('steamUrlInput');
-
-if(btnBuscarSteam && inputUrlSteam) {
-    btnBuscarSteam.addEventListener('click', async () => {
-        const url = inputUrlSteam.value;
-        const regex = /app\/(\d+)/;
-        const match = url.match(regex);
-
-        if (!match) {
-            Swal.fire('Link no válido', 'Usa un link de Steam válido.', 'warning');
-            return;
-        }
-
-        const appId = match[1];
-        Swal.fire({ title: 'Buscando...', didOpen: () => Swal.showLoading() });
-
-        try {
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://store.steampowered.com/api/appdetails?appids=${appId}&cc=cl`)}`;
-            const response = await fetch(proxyUrl);
-            const dataWrapper = await response.json();
-            const steamData = JSON.parse(dataWrapper.contents);
-
-            if (steamData[appId] && steamData[appId].success) {
-                const gameInfo = steamData[appId].data;
-                const inputJuego = document.getElementById('juego');
-                if(inputJuego) inputJuego.value = gameInfo.name;
-
-                const inputPrecio = document.getElementById('precioSteam');
-                if (gameInfo.is_free) {
-                    inputPrecio.value = 0;
-                } else if (gameInfo.price_overview) {
-                    let precio = gameInfo.price_overview.final / 100; // Usamos .final (oferta)
-                    inputPrecio.value = precio;
-                    
-                    Swal.close();
-                    const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                    if(gameInfo.price_overview.discount_percent > 0) {
-                        toast.fire({ icon: 'success', title: `¡Oferta detectada! (-${gameInfo.price_overview.discount_percent}%)` });
-                    } else {
-                        toast.fire({ icon: 'success', title: 'Datos cargados' });
-                    }
-                }
-            } else {
-                throw new Error('Juego no encontrado');
-            }
-        } catch (error) {
-            Swal.fire('Error', 'Ingresa los datos manualmente.', 'error');
-        }
-    });
-}
-
 // --- CÁLCULOS ---
-const inputPrecio = document.getElementById('precioSteam');
+const inputPrecio = document.getElementById('precioSteam'); // En Eneba el ID sigue siendo precioSteam en el HTML por comodidad
 if(inputPrecio) {
     inputPrecio.addEventListener('input', function() {
         if (this.value.startsWith('0') && this.value.length > 1) this.value = this.value.substring(1);
@@ -138,15 +82,15 @@ function calcularDescuento() {
     inputCodigoElem.classList.remove('vip-active');
 
     if (!precioInput || precioInput <= 0) {
-        Swal.fire('Faltan datos', 'Ingresa el precio del juego.', 'warning');
+        Swal.fire('Faltan datos', 'Ingresa el precio de Eneba.', 'warning');
         return;
     }
 
     const precio = parseFloat(precioInput);
+    const DESCUENTO_BASE = 0.30; 
 
     if (codigoInput === "") {
-        const descuento = 0.30; 
-        const precioFinal = Math.round(precio * (1 - descuento));
+        const precioFinal = Math.round(precio * (1 - DESCUENTO_BASE));
         mostrarResultadosUI(precio, precioFinal, false);
         return; 
     }
@@ -155,7 +99,7 @@ function calcularDescuento() {
 
     get(child(ref(db), `codigos_vip/${codigoInput}`)).then((snapshot) => {
         Swal.close();
-        let descuento = 0.30;
+        let descuento = DESCUENTO_BASE;
         let esVip = false;
 
         if (snapshot.exists()) {
@@ -176,11 +120,9 @@ function calcularDescuento() {
 function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
     const resultadoDiv = document.getElementById('resultado');
     resultadoDiv.style.display = 'block'; 
-    
     const msjComprobante = document.getElementById('mensaje-comprobante');
     if(msjComprobante) msjComprobante.style.display = 'block';
 
-    // Importante: Aquí seteamos el texto que luego leeremos al enviar
     document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
     const resFinalElem = document.getElementById('res-final');
     resFinalElem.innerText = formatoDinero(precioFinal);
@@ -203,52 +145,46 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     }
 }
 
-// --- ENVIAR PEDIDO (LÓGICA ACTUALIZADA) ---
+// --- ENVIAR PEDIDO ENEBA ---
 form.addEventListener('submit', function(event) {
     event.preventDefault(); 
     if (!tiendaAbierta || btnEnviar.disabled) return;
 
-    // 1. OBTENER PRECIOS SEPARADOS
-    // Precio Steam (El que se debe descontar de TU cupo porque es lo que te cuesta a ti)
-    const precioSteamStr = document.getElementById('res-original').innerText;
-    const costoSteam = parseInt(precioSteamStr.replace(/\D/g, '')); 
-
-    // Precio Cliente (El que paga el cliente, se guarda en el historial)
+    const precioOriginalStr = document.getElementById('res-original').innerText;
+    const costoOriginal = parseInt(precioOriginalStr.replace(/\D/g, '')); 
     const precioClienteStr = document.getElementById('res-final').innerText;
     const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
     Swal.fire({ title: 'Procesando...', text: 'No cierres la ventana', didOpen: () => Swal.showLoading() });
 
-    // TRANSACCIÓN: Aquí usamos costoSteam (el precio de Steam) para descontar del cupo
+    // Resta específicamente de 'presupuesto_eneba'
     runTransaction(saldoRef, (saldoActual) => {
         const actual = saldoActual || 0;
-        // Verificamos si hay saldo suficiente para cubrir el costo real (Steam)
-        if (actual >= costoSteam) return actual - costoSteam; 
+        if (actual >= costoOriginal) return actual - costoOriginal; 
         else return; 
     }).then((result) => {
         if (result.committed) {
             
-            // --- GUARDAR EN FIREBASE ---
             const nuevaOrdenRef = push(ref(db, 'ordenes'));
             set(nuevaOrdenRef, {
                 fecha: new Date().toISOString(),
                 email: form.email.value,
                 rut: form.rut.value, 
                 juego: form.juego.value,
-                precio_pagado: costoCliente, // Guardamos lo que pagó el CLIENTE
-                precio_steam: costoSteam,    // (Opcional) Guardamos cuánto costó en Steam
-                estado: 'pendiente'
+                precio_pagado: costoCliente,
+                precio_steam: costoOriginal, // Guardamos el costo original de Eneba
+                estado: 'pendiente',
+                plataforma: 'Eneba'
             });
 
-            // --- ENVIAR CORREO ---
             emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, this).then(() => {
-                Swal.fire('¡Pedido Recibido!', 'Revisa tu correo para el pago.', 'success');
+                Swal.fire('¡Pedido Eneba Recibido!', 'Revisa tu correo para el pago.', 'success');
                 form.reset();
                 document.getElementById('resultado').style.display = 'none';
                 btnEnviar.disabled = true;
             });
         } else {
-            Swal.fire('Lo sentimos', 'Se acaba de agotar el cupo disponible para cubrir el precio de Steam.', 'error');
+            Swal.fire('Lo sentimos', 'Cupo de Eneba agotado.', 'error');
         }
     }).catch((err) => {
         console.error(err);
@@ -256,7 +192,7 @@ form.addEventListener('submit', function(event) {
     });
 });
 
-// --- MODO OSCURO ---
+// MODO OSCURO (Standard)
 const btnTheme = document.getElementById('theme-toggle');
 const body = document.body;
 const iconSun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>';

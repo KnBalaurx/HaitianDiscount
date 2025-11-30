@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steam | HaitianDiscount</title> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Eneba | HaitianDiscount</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index_style.css">
     <link rel="shortcut icon" href="content/logo.png">
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
-       (function(){
-          emailjs.init("GyDMRqWVvMxC765-L");
-       })();
+       (function(){ emailjs.init("GyDMRqWVvMxC765-L"); })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -21,14 +21,13 @@
         <div class="container nav-container">
             <div class="brand">HaitianDiscount<span class="dot">.</span></div>
             <ul class="nav-links">
-                <li><a href="index.html" style="color: var(--accent); font-weight: bold;">Steam</a></li>
-                <li><a href="eneba.html">Eneba</a></li>
+                <li><a href="index.html">Steam</a></li>
+                <li><a href="eneba.html" style="color: #a855f7; font-weight: bold;">Eneba</a></li>
                 
                 <li><a href="#pedido">Cotizar</a></li>
                 <li><a href="admin_content/admin.html" class="admin-link" target="_blank">Admin</a></li>
                 <li>
-                    <button id="theme-toggle" class="theme-btn" aria-label="Cambiar modo oscuro">
-                        </button>
+                    <button id="theme-toggle" class="theme-btn" aria-label="Cambiar modo oscuro"></button>
                 </li>
             </ul>
         </div>
@@ -36,29 +35,35 @@
 
     <header class="hero">
         <div class="container">
-            <h1>Tus juegos de <span class="highlight">Steam</span>,<br> 30% más baratos.</h1>
-            <p class="subtitle">Gestionamos la compra de tus videojuegos favoritos en Steam optimizando el costo.</p>
+            <h1>Keys de <span class="highlight" style="color:#a855f7;">Eneba</span>,<br> con descuento extra.</h1>
+            <p class="subtitle">Compra keys globales o regionales en Eneba a través de nosotros y ahorra aún más.</p>
         </div>
     </header>
 
     <section class="how-it-works">
         <div class="container">
-            <h2 class="section-title">Ahorra en 3 Pasos</h2>
+            <h2 class="section-title">Cómo funciona en Eneba</h2>
             <div class="steps-grid">
                 <div class="step-card">
-                    <div class="step-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></div>
-                    <h3>1. Copia el Link</h3>
-                    <p>Busca tu juego en Steam y copia la URL (enlace).</p>
+                    <div class="step-icon" style="color:#a855f7; background: rgba(168,85,247,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    </div>
+                    <h3>1. Busca en Eneba</h3>
+                    <p>Entra a Eneba, busca tu juego/key y copia el LINK de la página.</p>
                 </div>
                 <div class="step-card">
-                    <div class="step-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+                    <div class="step-icon" style="color:#a855f7; background: rgba(168,85,247,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </div>
                     <h3>2. Ingresa Datos</h3>
-                    <p>Usa el buscador para detectar el precio automáticamente.</p>
+                    <p>Pega el link aquí e ingresa el precio que te aparece en Eneba manualmente.</p>
                 </div>
                 <div class="step-card">
-                    <div class="step-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
-                    <h3>3. Recibe tu Juego</h3>
-                    <p>Recibe el juego como regalo (Gift) en minutos.</p>
+                    <div class="step-icon" style="color:#a855f7; background: rgba(168,85,247,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <h3>3. Recibe la Key</h3>
+                    <p>Tras la transferencia, te enviamos el código de activación (Key) a tu correo.</p>
                 </div>
             </div>
         </div>
@@ -82,17 +87,14 @@
         <div class="container">
             <div class="form-wrapper">
                 <div class="form-header">
-                    <h3>Cotizar Steam</h3>
-                    <p>Completa los datos para calcular tu descuento.</p>
+                    <h3>Cotizar Eneba</h3>
+                    <p>Ingresa el precio que ves en Eneba para calcular tu total.</p>
                 </div>
                 
                 <form id="gameForm">
-                    <div class="input-group" style="position: relative;">
-                        <label for="steamUrlInput">Pegar Link de Steam (Autocompletar)</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="url" id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
-                            <button type="button" id="btnBuscarSteam" class="btn btn-primary" style="width: auto; padding: 0 15px;" title="Buscar datos">🔍</button>
-                        </div>
+                    <div class="input-group">
+                        <label for="steamUrlInput">Link del Juego en Eneba</label>
+                        <input type="url" id="steamUrlInput" placeholder="https://www.eneba.com/latam/..." required>
                     </div>
 
                     <div class="divider"></div>
@@ -103,18 +105,18 @@
 
                     <div class="grid-2">
                         <div class="input-group"><label>RUT</label><input type="text" name="rut" id="rut" required placeholder="12.345.678-9"></div>
-                        <div class="input-group"><label>Usuario Steam (Opcional)</label><input type="text" name="steam_user" id="steam_user" placeholder="ID o URL perfil"></div>
+                        <div class="input-group"><label>Usuario Eneba/Otro (Opcional)</label><input type="text" name="steam_user" id="steam_user" placeholder="N/A"></div>
                     </div>
 
-                    <div class="input-group"><label>Detalles (Opcional)</label><input type="text" name="detalles" id="detalles" placeholder="Ej. Edición Deluxe"></div>
+                    <div class="input-group"><label>Detalles (Región de la Key, etc)</label><input type="text" name="detalles" id="detalles" placeholder="Ej: Key Global, Key Latam..."></div>
                     <div class="divider"></div>
 
-                    <div class="input-group"><label>Nombre del Juego</label><input type="text" name="juego" id="juego" required placeholder="Ej. Elden Ring"></div>
+                    <div class="input-group"><label>Nombre del Juego / Producto</label><input type="text" name="juego" id="juego" required placeholder="Ej. FIFA 24 Key Global"></div>
 
                     <div class="grid-2">
                         <div class="input-group">
-                            <label>Precio Original (Steam)</label>
-                            <input type="number" id="precioSteam" name="precio_original" required placeholder="Precio sin descuento" min="1" step="1">
+                            <label>Precio en Eneba (CLP)</label>
+                            <input type="number" id="precioSteam" name="precio_original" required placeholder="Ingresa el precio exacto" min="1" step="1">
                         </div>
                         <div class="input-group">
                             <label>Código Promocional</label>
@@ -123,15 +125,16 @@
                     </div>
 
                     <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
-                    <input type="hidden" name="to_name" value="Admin Steam">
-                    <input type="hidden" name="plataforma_origen" value="Steam">
+                    <input type="hidden" name="to_name" value="Admin Eneba">
+                    <input type="hidden" name="plataforma_origen" value="Eneba">
 
                     <div id="resultado" class="result-container">
                         <div class="result-pricing">
-                            <div class="price-row"><span>Precio Steam:</span><span id="res-original" class="strikethrough">$0</span></div>
-                            <div class="price-row final"><span>A Pagar:</span><span id="res-final">$0</span></div>
+                            <div class="price-row"><span>Precio Eneba:</span><span id="res-original" class="strikethrough">$0</span></div>
+                            <div class="price-row final" style="color: #a855f7;"><span>A Pagar:</span><span id="res-final" style="color: #a855f7;">$0</span></div>
                             <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
                         </div>
+
                         <div class="bank-details">
                             <h4>Datos para Transferencia</h4>
                             <ul>
@@ -147,7 +150,7 @@
 
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary btn-calc" id="btnCalcular">Calcular Precio</button>
-                        <button type="submit" class="btn btn-primary btn-send" id="btnEnviar" disabled>Enviar Pedido</button>
+                        <button type="submit" class="btn btn-primary btn-send" id="btnEnviar" disabled style="background-color: #a855f7;">Enviar Pedido Eneba</button>
                     </div>
                 </form>
             </div>
@@ -159,12 +162,12 @@
             <h2 class="section-title">Preguntas Frecuentes</h2>
             <div class="faq-grid">
                 <details class="faq-item">
-                    <summary>¿Es seguro comprar aquí?</summary>
-                    <p>Totalmente. Compramos el juego legítimamente y te lo enviamos como regalo o key.</p>
+                    <summary>¿Cómo funcionan las Keys de Eneba?</summary>
+                    <p>Nosotros compramos la key en Eneba por ti usando nuestro método de pago y te enviamos el código a tu correo para que lo actives.</p>
                 </details>
                 <details class="faq-item">
-                    <summary>¿Cuánto tardan en enviar el juego?</summary>
-                    <p>Generalmente tardamos entre 10 a 30 minutos dentro del horario de atención.</p>
+                    <summary>¿Cuánto tardan?</summary>
+                    <p>Al igual que en Steam, procesamos pedidos en 10-30 minutos en horario hábil.</p>
                 </details>
             </div>
         </div>
@@ -177,7 +180,9 @@
         </div>
     </footer>
 
-    <script type="module" src="index_script.js"></script> <a href="https://wa.me/56948943497?text=Hola%20HaitianDiscount" class="whatsapp-float" target="_blank">
+    <script type="module" src="eneba_script.js"></script>
+    
+    <a href="https://wa.me/56948943497?text=Hola%20HaitianDiscount" class="whatsapp-float" target="_blank">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/></svg>
     </a>
 </body>
