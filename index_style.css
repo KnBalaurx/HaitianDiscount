@@ -316,3 +316,77 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
     .hero h1 { font-size: 2rem; }
     .container { padding: 0 25px; }
 }
+
+/* --- NUEVA ALERTA DE REQUISITO STEAM (ACTUALIZADA) --- */
+.info-section {
+    padding-bottom: 40px; 
+}
+
+.steam-alert-box {
+    background-color: rgba(37, 99, 235, 0.1); /* Fondo azul muy suave */
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start; /* Alinea el icono arriba, importante con más texto */
+    color: var(--text-main);
+    box-shadow: var(--shadow-sm);
+}
+
+.alert-icon {
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Evita que el icono se deforme */
+    margin-top: 4px; /* Pequeño ajuste visual para alinearlo con la primera línea de texto */
+}
+
+.alert-content {
+    flex: 1; /* Toma el espacio restante */
+}
+
+.alert-content h4 {
+    margin: 0 0 8px 0;
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.alert-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+/* Agrega separación entre los párrafos */
+.alert-content p + p {
+    margin-top: 10px;
+}
+
+/* Estilo para los enlaces dentro de la alerta */
+.alert-content a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.alert-content a:hover {
+    color: var(--accent-hover);
+}
+
+/* Ajuste para móviles */
+@media (max-width: 600px) {
+    .steam-alert-box {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+    .alert-icon {
+        margin-bottom: 10px;
+        margin-top: 0;
+    }
+}
