@@ -22,13 +22,11 @@
             <ul class="nav-links">
                 <li><a href="../index.html" class="text-link">Steam</a></li>
                 <li><a href="../eneba.html" class="text-link">Eneba</a></li>
-                
                 <li>
                     <a href="perfil.html" class="nav-icon-link" aria-label="Mi Cuenta" style="background: var(--border); color: var(--primary);">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     </a>
                 </li>
-
                 <li><button id="theme-toggle" class="theme-btn"></button></li>
             </ul>
         </div>
@@ -38,43 +36,81 @@
         
         <div id="loginView" class="login-box">
             <h2>Accede a tu Historial</h2>
-            <p style="color: var(--text-light); margin-bottom: 20px;">Inicia sesión con Google para ver el estado de tus compras.</p>
-            <button id="btnGoogleLogin" class="btn btn-primary" style="max-width: 300px; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto;">
+            <p style="color: var(--text-light); margin-bottom: 20px;">Inicia sesión con Google para ver tus pedidos y guardar tus datos.</p>
+            <button id="btnGoogleLogin" class="btn btn-primary" style="max-width: 300px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
                 Iniciar con Google
             </button>
         </div>
 
         <div id="userView" class="hidden">
+            
             <div class="user-header">
                 <div style="flex:1;">
                     <h3 id="userName">Hola, Usuario</h3>
                     <p style="font-size: 0.9rem; color: var(--text-light);" id="userEmail">Cargando...</p>
                 </div>
-                
                 <div style="display: flex; align-items: center;">
                     <a href="admin.html" id="adminBtn" class="btn-admin-access hidden" target="_blank">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
                         Panel Admin
                     </a>
-
                     <button id="btnLogout" class="btn btn-secondary btn-sm" style="width: auto;">Cerrar Sesión</button>
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table id="historyTable">
-                    <thead>
-                        <tr><th>Fecha</th><th>Juego</th><th>Plataforma</th><th>Precio</th><th>Estado</th></tr>
-                    </thead>
-                    <tbody id="historyBody"></tbody>
-                </table>
-                <div id="noDataMsg" style="text-align:center; padding: 40px; display:none; color: var(--text-light);">
-                    No tienes pedidos registrados con esta cuenta.
+            <div class="profile-tabs">
+                <button class="tab-btn active" data-target="tab-pedidos">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                    </svg>
+                    Mis Pedidos
+                </button>
+                <button class="tab-btn" data-target="tab-datos">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+                    Mis Datos
+                </button>
+            </div>
+
+            <div id="tab-pedidos" class="tab-content active">
+                <div class="table-responsive">
+                    <table id="historyTable">
+                        <thead><tr><th>Fecha</th><th>Juego</th><th>Plataforma</th><th>Precio</th><th>Estado</th></tr></thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                    <div id="noDataMsg" style="text-align:center; padding: 40px; display:none; color: var(--text-light);">
+                        No tienes pedidos registrados con esta cuenta.
+                    </div>
                 </div>
             </div>
-        </div>
 
+            <div id="tab-datos" class="tab-content">
+                <div class="user-data-card" style="background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h3 style="margin-bottom: 15px; color: var(--primary);">Datos de Autocompletado</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 20px;">Estos datos se usarán para autocompletar tus futuras compras.</p>
+                    
+                    <div class="form-stack">
+                        <div class="input-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Nombre Completo</label>
+                            <input type="text" id="profileNombre" placeholder="Tu nombre real" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-body); color:var(--text-main);">
+                        </div>
+                        <div class="input-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">RUT</label>
+                            <input type="text" id="profileRut" placeholder="12.345.678-9" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-body); color:var(--text-main);">
+                        </div>
+                        <div class="input-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Usuario Steam (ID o URL)</label>
+                            <input type="text" id="profileSteam" placeholder="Tu ID de Steam" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-body); color:var(--text-main);">
+                        </div>
+                        
+                        <div class="input-group" style="margin-top: 10px;">
+                            <button id="btnSaveData" class="btn btn-primary" style="width:100%; padding: 12px;">Guardar Cambios</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <script type="module" src="../assets/js/perfil.js"></script>

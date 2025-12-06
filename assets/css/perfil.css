@@ -1,84 +1,69 @@
 /* ESTILOS DE LA PÁGINA DE PERFIL */
 
-.profile-container { 
-    max-width: 900px; 
-    margin: 40px auto; 
-    padding: 20px; 
+.profile-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+
+.login-box { text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+
+.user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--bg-card); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); flex-wrap: wrap; gap: 20px; }
+
+/* --- SISTEMA DE PESTAÑAS (TABS) --- */
+.profile-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
 }
 
-.login-box { 
-    text-align: center; 
-    padding: 60px 20px; 
-    background: var(--bg-card); 
-    border-radius: var(--radius); 
-    border: 1px solid var(--border); 
-    box-shadow: var(--shadow-sm); 
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
 }
 
-.user-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 30px; 
-    background: var(--bg-card); 
-    padding: 20px; 
-    border-radius: var(--radius); 
-    border: 1px solid var(--border); 
-    flex-wrap: wrap; 
-    gap: 20px; 
+.tab-btn:hover { color: var(--primary); }
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
 }
 
-.table-responsive { 
-    overflow-x: auto; 
-    background: var(--bg-card); 
-    border-radius: var(--radius); 
-    border: 1px solid var(--border); 
+/* CONTENIDO TABS */
+.tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+.tab-content.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    min-width: 600px; 
-}
+/* TABLAS Y BADGES */
+.table-responsive { overflow-x: auto; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+th { text-align: left; padding: 15px; background: rgba(0,0,0,0.02); color: var(--primary); font-size: 0.85rem; border-bottom: 2px solid var(--border); }
+td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-main); }
 
-th { 
-    text-align: left; 
-    padding: 15px; 
-    background: rgba(0,0,0,0.02); 
-    color: var(--primary); 
-    font-size: 0.85rem; 
-    border-bottom: 2px solid var(--border); 
-}
-
-td { 
-    padding: 15px; 
-    border-bottom: 1px solid var(--border); 
-    font-size: 0.9rem; 
-    color: var(--text-main); 
-}
-
-/* Badges de Estado */
-.status-badge { 
-    padding: 4px 10px; 
-    border-radius: 20px; 
-    font-size: 0.75rem; 
-    font-weight: 700; 
-    text-transform: uppercase; 
-}
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
 .st-pendiente { background: #fef3c7; color: #d97706; }
 .st-completado { background: #dcfce7; color: #166534; }
 .st-cancelado { background: #fee2e2; color: #991b1b; }
 
-/* Plataformas */
 .platform-steam { color: #2563eb; font-weight: bold; }
 .platform-eneba { color: #a855f7; font-weight: bold; }
 
-/* CLASE OCULTA (Corrección: !important para forzar ocultamiento) */
-.hidden { 
-    display: none !important; 
-}
+/* UTILS */
+.hidden { display: none !important; }
 
-/* Botón Admin Exclusivo */
 .btn-admin-access {
     background-color: var(--primary);
     color: var(--bg-body);

@@ -1,21 +1,10 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// IMPORTAMOS TODO DESDE CONFIG
+import { db, auth, initTheme } from './config.js';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAVQm_MUEWQaf7NXzna2r4Sgbl5SeGNOyM",
-    authDomain: "haitiandiscount.firebaseapp.com",
-    databaseURL: "https://haitiandiscount-default-rtdb.firebaseio.com",
-    projectId: "haitiandiscount",
-    storageBucket: "haitiandiscount.firebasestorage.app",
-    messagingSenderId: "521054591260",
-    appId: "1:521054591260:web:a6b847b079d58b9e7942d9",
-    measurementId: "G-EMVPQGPWTE"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app); 
+// Iniciar Tema
+initTheme();
 
 const saldoRef = ref(db, 'presupuesto_steam');
 const estadoRef = ref(db, 'estado_steam');
@@ -23,7 +12,6 @@ const estadoRef = ref(db, 'estado_steam');
 const SERVICE_ID = 'service_jke4epd';    
 const TEMPLATE_ID = 'template_0l9w69b'; 
 
-// DOM Elements
 let presupuestoActual = 0; 
 const displayTope = document.getElementById('tope-dinero');
 const inputPrecioFinal = document.getElementById('precioFinalInput');
@@ -31,21 +19,21 @@ const form = document.getElementById('gameForm');
 const btnEnviar = document.getElementById('btnEnviar');
 const btnCalc = document.querySelector('.btn-calc'); 
 const inputComprobante = document.getElementById('comprobanteInput');
+const inputRut = document.getElementById('rut');
 
-if(btnCalc) {
-    btnCalc.addEventListener('click', calcularDescuento);
-}
+let rutEsValido = false;
+
+if(btnCalc) { btnCalc.addEventListener('click', calcularDescuento); }
+if(inputRut) { configurarValidacionRut(inputRut); }
 
 const formatoDinero = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
 
-// --- ACTUALIZACIÓN SALDO STEAM ---
 onValue(saldoRef, (snapshot) => {
     const data = snapshot.val();
     presupuestoActual = data || 0;
     displayTope.innerText = formatoDinero(presupuestoActual);
 });
 
-// --- ESTADO TIENDA STEAM ---
 let tiendaAbierta = true; 
 onValue(estadoRef, (snapshot) => {
     const estado = snapshot.val(); 
@@ -62,7 +50,6 @@ onValue(estadoRef, (snapshot) => {
     }
 });
 
-// --- BUSCADOR STEAM ---
 const btnBuscarSteam = document.getElementById('btnBuscarSteam');
 const inputUrlSteam = document.getElementById('steamUrlInput');
 const previewContainer = document.getElementById('previewContainer');
@@ -123,7 +110,6 @@ if(btnBuscarSteam && inputUrlSteam) {
     });
 }
 
-// --- CÁLCULOS ---
 const inputPrecio = document.getElementById('precioSteam');
 if(inputPrecio) {
     inputPrecio.addEventListener('input', function() {
@@ -202,7 +188,6 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     }
 }
 
-// --- UTILIDAD: COMPRIMIR IMAGEN ---
 function comprimirImagen(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -216,7 +201,6 @@ function comprimirImagen(file) {
                 const scaleSize = maxWidth / img.width;
                 canvas.width = maxWidth;
                 canvas.height = img.height * scaleSize;
-
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
@@ -228,20 +212,104 @@ function comprimirImagen(file) {
     });
 }
 
-// --- ENVIAR PEDIDO STEAM ---
+function configurarValidacionRut(rutInput) {
+    rutInput.addEventListener('input', function(e) {
+        let valor = e.target.value.replace(/[^0-9kK]/g, '');
+        if (valor.length > 1) {
+            const cuerpo = valor.slice(0, -1);
+            const dv = valor.slice(-1).toUpperCase();
+            let rutFormateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            e.target.value = `${rutFormateado}-${dv}`;
+            if(validarRut(cuerpo, dv)) {
+                rutEsValido = true;
+                e.target.style.borderColor = "var(--success)";
+                e.target.style.boxShadow = "0 0 0 2px rgba(16, 185, 129, 0.2)";
+            } else {
+                rutEsValido = false;
+                e.target.style.borderColor = "var(--danger)";
+                e.target.style.boxShadow = "0 0 0 2px rgba(239, 68, 68, 0.2)";
+            }
+        } else {
+            rutEsValido = false;
+            e.target.style.borderColor = "var(--border)";
+            e.target.style.boxShadow = "none";
+        }
+    });
+}
+
+function validarRut(cuerpo, dv) {
+    if(cuerpo.length < 6) return false;
+    let suma = 0;
+    let multiplo = 2;
+    for(let i = 1; i <= cuerpo.length; i++) {
+        const index = multiplo * valorAt(cuerpo.length - i);
+        suma = suma + index;
+        if(multiplo < 7) { multiplo = multiplo + 1; } else { multiplo = 2; }
+    }
+    const dvEsperado = 11 - (suma % 11);
+    const dvCalc = (dvEsperado == 11) ? "0" : ((dvEsperado == 10) ? "K" : dvEsperado.toString());
+    return dvCalc === dv;
+    function valorAt(pos) { return parseInt(cuerpo.charAt(pos)); }
+}
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const emailInput = document.getElementById('email');
+        if (emailInput && !emailInput.value) emailInput.value = user.email;
+
+        const userRef = ref(db, 'usuarios/' + user.uid);
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                const nombreInput = document.getElementById('nombre');
+                if (nombreInput && data.nombre) nombreInput.value = data.nombre;
+
+                const rutInput = document.getElementById('rut');
+                if (rutInput && data.rut) {
+                    rutInput.value = data.rut;
+                    rutInput.dispatchEvent(new Event('input')); 
+                }
+
+                const steamInput = document.getElementById('steam_user');
+                if (steamInput && data.steam_user) steamInput.value = data.steam_user;
+                
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Toast.fire({ icon: 'info', title: 'Datos cargados de tu perfil' });
+            }
+        });
+    }
+});
+
 form.addEventListener('submit', async function(event) {
     event.preventDefault(); 
     if (!tiendaAbierta || btnEnviar.disabled) return;
+
+    if (!rutEsValido) {
+        Swal.fire('RUT Inválido', 'Por favor ingresa un RUT chileno válido.', 'error');
+        inputRut.focus();
+        return;
+    }
 
     if (!inputComprobante.files || inputComprobante.files.length === 0) {
         Swal.fire('Falta el Comprobante', 'Por favor adjunta la captura de la transferencia.', 'warning');
         return;
     }
 
+    // --- SEGURIDAD AGREGADA: VERIFICACIÓN FINAL DE MONTOS ---
+    // Obtenemos los valores visuales actuales y los limpiamos para que sean números
     const precioSteamStr = document.getElementById('res-original').innerText;
     const costoSteam = parseInt(precioSteamStr.replace(/\D/g, '')); 
     const precioClienteStr = document.getElementById('res-final').innerText;
     const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
+
+    // Validación anti-hack: Si el costo es 0 o negativo (y no es juego gratis que no aplica aquí porque cobras servicio)
+    // O si el DOM fue manipulado para que el costoSteam sea 1.
+    if (costoSteam <= 100 || costoCliente <= 0) {
+        Swal.fire('Error de Datos', 'Los montos no son válidos. Recarga la página e intenta de nuevo.', 'error');
+        return;
+    }
+    // --------------------------------------------------------
 
     Swal.fire({ title: 'Procesando...', text: 'Subiendo comprobante...', didOpen: () => Swal.showLoading() });
 
@@ -254,7 +322,6 @@ form.addEventListener('submit', async function(event) {
             else return; 
         }).then((result) => {
             if (result.committed) {
-                // --- NUEVO: OBTENER USUARIO ACTUAL ---
                 const user = auth.currentUser; 
 
                 const nuevaOrdenRef = push(ref(db, 'ordenes'));
@@ -268,13 +335,16 @@ form.addEventListener('submit', async function(event) {
                     estado: 'pendiente',
                     plataforma: 'Steam',
                     comprobante_img: comprobanteBase64,
-                    // --- GUARDAR UID PARA HISTORIAL ---
                     uid: user ? user.uid : null 
                 });
 
                 emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
                     Swal.fire('¡Pedido Recibido!', 'Hemos recibido tu comprobante y pedido.', 'success');
                     form.reset();
+                    rutEsValido = false; 
+                    inputRut.style.borderColor = "var(--border)";
+                    inputRut.style.boxShadow = "none";
+                    
                     if(previewContainer) previewContainer.style.display = 'none';
                     document.getElementById('resultado').style.display = 'none';
                     btnEnviar.disabled = true;
@@ -286,30 +356,5 @@ form.addEventListener('submit', async function(event) {
     } catch (err) {
         console.error(err);
         Swal.fire('Error', 'Error al procesar la imagen o el pedido.', 'error');
-    }
-});
-
-// MODO OSCURO
-const btnTheme = document.getElementById('theme-toggle');
-const body = document.body;
-const iconSun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>';
-const iconMoon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>';
-
-const currentTheme = localStorage.getItem('theme');
-if (currentTheme === 'dark') {
-    body.classList.add('dark-mode');
-    btnTheme.innerHTML = iconSun;
-} else {
-    btnTheme.innerHTML = iconMoon;
-}
-
-btnTheme.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    if (body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
-        btnTheme.innerHTML = iconSun;
-    } else {
-        localStorage.setItem('theme', 'light');
-        btnTheme.innerHTML = iconMoon;
     }
 });

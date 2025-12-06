@@ -1,29 +1,10 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, remove, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-// IMPORTANTE: Agregamos GoogleAuthProvider y signInWithPopup
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { ref, onValue, set, update, remove, child, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// IMPORTAMOS TODO DESDE CONFIG.JS
+import { db, auth, provider, initTheme } from './config.js';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAVQm_MUEWQaf7NXzna2r4Sgbl5SeGNOyM",
-    authDomain: "haitiandiscount.firebaseapp.com",
-    databaseURL: "https://haitiandiscount-default-rtdb.firebaseio.com",
-    projectId: "haitiandiscount",
-    storageBucket: "haitiandiscount.firebasestorage.app",
-    messagingSenderId: "521054591260",
-    appId: "1:521054591260:web:a6b847b079d58b9e7942d9",
-    measurementId: "G-EMVPQGPWTE"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider(); // Proveedor de Google
-
-// *** LISTA DE ADMINISTRADORES ***
-const ADMIN_UIDS = [
-    'y7wKykEchQON3tS22mRhJURsHOv1',  // Tomas
-    'DEKH3yxMy6hCTkdbvwZl4dkFlnc2'   // Franchute
-];
+// INICIAR TEMA
+initTheme();
 
 // DOM Elements
 const loginOverlay = document.getElementById('login-overlay');
@@ -33,23 +14,31 @@ const ordersList = document.getElementById('ordersList');
 const loaderView = document.getElementById('loaderView');
 const loginCard = document.getElementById('loginCard');
 
-// 1. AUTH CON CONTROL DE CARGA
-onAuthStateChanged(auth, (user) => {
+// 1. AUTH CON VERIFICACIÓN DE ROL EN DB
+onAuthStateChanged(auth, async (user) => {
     if (user) {
-        if (ADMIN_UIDS.includes(user.uid)) {
-            // Es admin
-            loginOverlay.style.display = 'none';
-            adminContent.style.display = 'block';
-            iniciarListeners(); 
-        } else {
-            // No es admin
+        // Verificar si es admin consultando la DB (Más seguro que hardcoded)
+        const adminRef = ref(db, `admins/${user.uid}`);
+        
+        try {
+            const snapshot = await get(adminRef);
+            if (snapshot.exists() && snapshot.val() === true) {
+                // Es admin verificado
+                loginOverlay.style.display = 'none';
+                adminContent.style.display = 'block';
+                iniciarListeners(); 
+            } else {
+                throw new Error("No admin");
+            }
+        } catch (e) {
+            // No es admin o error
             Swal.fire({
                 icon: 'error',
                 title: 'Acceso Denegado',
                 text: 'No tienes permisos de administrador.',
                 allowOutsideClick: false
             }).then(() => {
-                window.location.href = "../index.html"; 
+                signOut(auth).then(() => window.location.href = "../index.html");
             });
         }
     } else {
@@ -61,7 +50,7 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// --- LOGIN CON GOOGLE (NUEVO) ---
+// --- LOGIN CON GOOGLE ---
 document.getElementById('btnGoogleAdmin').addEventListener('click', () => {
     loginCard.style.display = 'none';
     loaderView.style.display = 'block';
@@ -73,7 +62,7 @@ document.getElementById('btnGoogleAdmin').addEventListener('click', () => {
     });
 });
 
-// LOGIN CON CORREO (RESPALDO)
+// LOGIN CON CORREO
 document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -94,7 +83,7 @@ document.getElementById('btnLogout').addEventListener('click', () => {
     signOut(auth).then(() => window.location.reload());
 });
 
-// 2. DATA
+// 2. DATA LISTENERS
 function iniciarListeners() {
     
     // --- A. GESTIÓN STEAM ---
@@ -284,29 +273,3 @@ function iniciarListeners() {
         });
     };
 }
-
-// 3. DARK MODE
-const btnTheme = document.getElementById('theme-toggle');
-const body = document.body;
-
-const iconSun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>';
-const iconMoon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>';
-
-const currentTheme = localStorage.getItem('theme');
-if (currentTheme === 'dark') {
-    body.classList.add('dark-mode');
-    btnTheme.innerHTML = iconSun;
-} else {
-    btnTheme.innerHTML = iconMoon;
-}
-
-btnTheme.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    if (body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
-        btnTheme.innerHTML = iconSun;
-    } else {
-        localStorage.setItem('theme', 'light');
-        btnTheme.innerHTML = iconMoon;
-    }
-});
