@@ -53,7 +53,6 @@ function iniciarListeners() {
     const saldoSteamRef = ref(db, 'presupuesto_steam');
     const estadoSteamRef = ref(db, 'estado_steam');
 
-    // 1. Presupuesto Steam
     onValue(saldoSteamRef, (snap) => {
         const valor = snap.val() || 0;
         document.getElementById('budgetSteamDisplay').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
@@ -67,7 +66,6 @@ function iniciarListeners() {
         }
     });
 
-    // 2. Estado Steam
     let estadoActualSteam = '';
     onValue(estadoSteamRef, (snap) => {
         estadoActualSteam = snap.val() || 'abierto';
@@ -85,7 +83,6 @@ function iniciarListeners() {
     const saldoEnebaRef = ref(db, 'presupuesto_eneba');
     const estadoEnebaRef = ref(db, 'estado_eneba');
 
-    // 1. Presupuesto Eneba
     onValue(saldoEnebaRef, (snap) => {
         const valor = snap.val() || 0;
         document.getElementById('budgetEnebaDisplay').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
@@ -99,7 +96,6 @@ function iniciarListeners() {
         }
     });
 
-    // 2. Estado Eneba
     let estadoActualEneba = '';
     onValue(estadoEnebaRef, (snap) => {
         estadoActualEneba = snap.val() || 'abierto';
@@ -113,7 +109,7 @@ function iniciarListeners() {
     });
 
 
-    // --- C. CÓDIGOS VIP (COMPARTIDOS) ---
+    // --- C. CÓDIGOS VIP ---
     const vipRef = ref(db, 'codigos_vip');
     onValue(vipRef, (snap) => {
         vipList.innerHTML = ''; 
@@ -172,6 +168,18 @@ function iniciarListeners() {
                 const plat = orden.plataforma || 'Steam';
                 const platStyle = plat === 'Eneba' ? 'color: #a855f7; font-weight: bold; font-size: 0.8rem;' : 'color: #2563eb; font-weight: bold; font-size: 0.8rem;';
                 
+                // Botón Comprobante
+                let btnComprobante = '<span style="color:#ccc; font-size:0.8rem;">Sin foto</span>';
+                if(orden.comprobante_img) {
+                    // Usamos un botón que llama a verComprobante pasando el ID para buscar la data o pasar la string directamente (cuidado con strings largas en HTML inline, mejor usar función)
+                    // Para evitar problemas de caracteres en el HTML, guardamos la data en un objeto global temporal o accedemos a la DB.
+                    // Truco simple: Asignar el base64 a una variable global indexada por ID
+                    if(!window.imagenesComprobantes) window.imagenesComprobantes = {};
+                    window.imagenesComprobantes[id] = orden.comprobante_img;
+                    
+                    btnComprobante = `<button class="btn btn-sm" style="background:#64748b; color:white;" onclick="verComprobante('${id}')">📷 Ver</button>`;
+                }
+
                 const fila = `
                     <tr>
                         <td style="font-size: 0.8rem; color: #64748b;">${fecha}</td>
@@ -183,7 +191,7 @@ function iniciarListeners() {
                             <div style="${platStyle}">${plat.toUpperCase()}</div>
                             <div style="font-weight:500;">${orden.juego}</div>
                         </td>
-                        <td style="font-weight:bold;">${monto}</td>
+                        <td style="font-weight:bold;">${monto} <br> ${btnComprobante}</td>
                         
                         <td>
                             <select onchange="cambiarEstado('${id}', this.value)" class="status-select status-${estado}">
@@ -204,6 +212,19 @@ function iniciarListeners() {
             ordersList.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay ventas registradas</td></tr>';
         }
     });
+
+    window.verComprobante = (id) => {
+        const imgData = window.imagenesComprobantes[id];
+        if(imgData) {
+            Swal.fire({
+                title: 'Comprobante',
+                imageUrl: imgData,
+                imageAlt: 'Comprobante de pago',
+                showCloseButton: true,
+                confirmButtonText: 'Cerrar'
+            });
+        }
+    };
 
     window.cambiarEstado = (id, nuevoEstado) => {
         update(child(ordenesRef, id), { estado: nuevoEstado })

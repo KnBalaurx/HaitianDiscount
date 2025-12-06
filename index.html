@@ -108,6 +108,10 @@
                             <input type="url" id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
                             <button type="button" id="btnBuscarSteam" class="btn btn-primary" style="width: auto; padding: 0 15px;" title="Buscar datos">🔍</button>
                         </div>
+                        
+                        <div id="previewContainer" class="game-preview-box">
+                            <img id="gameCover" src="" alt="Portada del Juego">
+                        </div>
                     </div>
 
                     <div class="divider"></div>
@@ -144,6 +148,7 @@
                     <div id="resultado" class="result-container">
                         <div class="result-pricing">
                             <div class="price-row"><span>Precio Steam:</span><span id="res-original" class="strikethrough">$0</span></div>
+                            <div class="price-row savings text-steam"><span>¡Te Ahorras!:</span><span id="res-ahorro">$0</span></div>
                             <div class="price-row final"><span>A Pagar:</span><span id="res-final">$0</span></div>
                             <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
                         </div>
@@ -156,7 +161,15 @@
                                 <li><strong>N° Cuenta:</strong> 22566397</li>
                                 <li><strong>Email:</strong> tomas07wilson@gmail.com</li>
                             </ul>
-                            <p class="note-comprobante" id="mensaje-comprobante" style="display:none;">* Por favor adjunta el comprobante al enviar el correo.</p>
+                            
+                            <div class="file-steam"> 
+                                <div class="upload-box">
+                                    <label for="comprobanteInput">Adjuntar Comprobante (Imagen)</label>
+                                    <input type="file" id="comprobanteInput" class="custom-file-input" accept="image/*">
+                                    <span class="small-text">* Requerido para procesar la compra.</span>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 

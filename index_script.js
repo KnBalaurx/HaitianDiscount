@@ -17,11 +17,9 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app); 
 
-// REFERENCIAS ESPECÍFICAS DE STEAM
 const saldoRef = ref(db, 'presupuesto_steam');
 const estadoRef = ref(db, 'estado_steam');
 
-// EMAILJS
 const SERVICE_ID = 'service_jke4epd';    
 const TEMPLATE_ID = 'template_0l9w69b'; 
 
@@ -32,6 +30,7 @@ const inputPrecioFinal = document.getElementById('precioFinalInput');
 const form = document.getElementById('gameForm');
 const btnEnviar = document.getElementById('btnEnviar');
 const btnCalc = document.querySelector('.btn-calc'); 
+const inputComprobante = document.getElementById('comprobanteInput'); // NUEVO
 
 if(btnCalc) {
     btnCalc.addEventListener('click', calcularDescuento);
@@ -66,12 +65,15 @@ onValue(estadoRef, (snapshot) => {
 // --- BUSCADOR STEAM ---
 const btnBuscarSteam = document.getElementById('btnBuscarSteam');
 const inputUrlSteam = document.getElementById('steamUrlInput');
+const previewContainer = document.getElementById('previewContainer');
+const gameCoverImg = document.getElementById('gameCover');
 
 if(btnBuscarSteam && inputUrlSteam) {
     btnBuscarSteam.addEventListener('click', async () => {
         const url = inputUrlSteam.value;
         const regex = /app\/(\d+)/;
         const match = url.match(regex);
+        if(previewContainer) previewContainer.style.display = 'none';
 
         if (!match) {
             Swal.fire('Link no válido', 'Usa un link de Steam válido.', 'warning');
@@ -92,13 +94,17 @@ if(btnBuscarSteam && inputUrlSteam) {
                 const inputJuego = document.getElementById('juego');
                 if(inputJuego) inputJuego.value = gameInfo.name;
 
+                if (gameInfo.header_image && previewContainer && gameCoverImg) {
+                    gameCoverImg.src = gameInfo.header_image;
+                    previewContainer.style.display = 'block';
+                }
+
                 const inputPrecio = document.getElementById('precioSteam');
                 if (gameInfo.is_free) {
                     inputPrecio.value = 0;
                 } else if (gameInfo.price_overview) {
                     let precio = gameInfo.price_overview.final / 100;
                     inputPrecio.value = precio;
-                    
                     Swal.close();
                     const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                     if(gameInfo.price_overview.discount_percent > 0) {
@@ -111,7 +117,8 @@ if(btnBuscarSteam && inputUrlSteam) {
                 throw new Error('Juego no encontrado');
             }
         } catch (error) {
-            Swal.fire('Error', 'Ingresa los datos manualmente.', 'error');
+            console.error(error);
+            Swal.fire('Error', 'No pudimos cargar los datos. Ingrésalos manualmente.', 'error');
         }
     });
 }
@@ -127,18 +134,15 @@ if(inputPrecio) {
 
 function calcularDescuento() {
     if (!tiendaAbierta) return;
-
     const precioInput = document.getElementById('precioSteam').value;
     const codigoInput = document.getElementById('codigoInvitado').value.trim().toUpperCase(); 
     const inputCodigoElem = document.getElementById('codigoInvitado'); 
-
     inputCodigoElem.classList.remove('vip-active');
 
     if (!precioInput || precioInput <= 0) {
         Swal.fire('Faltan datos', 'Ingresa el precio del juego.', 'warning');
         return;
     }
-
     const precio = parseFloat(precioInput);
 
     if (codigoInput === "") {
@@ -147,14 +151,11 @@ function calcularDescuento() {
         mostrarResultadosUI(precio, precioFinal, false);
         return; 
     }
-
     Swal.fire({ title: 'Verificando...', didOpen: () => Swal.showLoading() });
-
     get(child(ref(db), `codigos_vip/${codigoInput}`)).then((snapshot) => {
         Swal.close();
         let descuento = 0.30;
         let esVip = false;
-
         if (snapshot.exists()) {
             descuento = snapshot.val(); 
             esVip = true;
@@ -173,10 +174,14 @@ function calcularDescuento() {
 function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor = 0.30) {
     const resultadoDiv = document.getElementById('resultado');
     resultadoDiv.style.display = 'block'; 
+    // Ocultar mensaje antiguo de "adjunta comprobante al correo" ya que ahora lo suben
     const msjComprobante = document.getElementById('mensaje-comprobante');
-    if(msjComprobante) msjComprobante.style.display = 'block';
+    if(msjComprobante) msjComprobante.style.display = 'none';
 
     document.getElementById('res-original').innerText = formatoDinero(precioOriginal);
+    const ahorro = precioOriginal - precioFinal;
+    document.getElementById('res-ahorro').innerText = formatoDinero(ahorro);
+
     const resFinalElem = document.getElementById('res-final');
     resFinalElem.innerText = formatoDinero(precioFinal);
     inputPrecioFinal.value = formatoDinero(precioFinal);
@@ -198,53 +203,95 @@ function mostrarResultadosUI(precioOriginal, precioFinal, esVip, descuentoValor 
     }
 }
 
+// --- UTILIDAD: COMPRIMIR IMAGEN A BASE64 ---
+function comprimirImagen(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxWidth = 800; // Reducimos tamaño máximo
+                const scaleSize = maxWidth / img.width;
+                canvas.width = maxWidth;
+                canvas.height = img.height * scaleSize;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Comprimir a JPEG calidad 0.6 para no saturar BD
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
+                resolve(dataUrl);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+}
+
 // --- ENVIAR PEDIDO STEAM ---
-form.addEventListener('submit', function(event) {
+form.addEventListener('submit', async function(event) {
     event.preventDefault(); 
     if (!tiendaAbierta || btnEnviar.disabled) return;
+
+    // VALIDACIÓN DE COMPROBANTE
+    if (!inputComprobante.files || inputComprobante.files.length === 0) {
+        Swal.fire('Falta el Comprobante', 'Por favor adjunta la captura de la transferencia.', 'warning');
+        return;
+    }
 
     const precioSteamStr = document.getElementById('res-original').innerText;
     const costoSteam = parseInt(precioSteamStr.replace(/\D/g, '')); 
     const precioClienteStr = document.getElementById('res-final').innerText;
     const costoCliente = parseInt(precioClienteStr.replace(/\D/g, ''));
 
-    Swal.fire({ title: 'Procesando...', text: 'No cierres la ventana', didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Subiendo comprobante...', text: 'Esto puede tardar unos segundos', didOpen: () => Swal.showLoading() });
 
-    runTransaction(saldoRef, (saldoActual) => {
-        const actual = saldoActual || 0;
-        if (actual >= costoSteam) return actual - costoSteam; 
-        else return; 
-    }).then((result) => {
-        if (result.committed) {
-            
-            const nuevaOrdenRef = push(ref(db, 'ordenes'));
-            set(nuevaOrdenRef, {
-                fecha: new Date().toISOString(),
-                email: form.email.value,
-                rut: form.rut.value, 
-                juego: form.juego.value,
-                precio_pagado: costoCliente, 
-                precio_steam: costoSteam,
-                estado: 'pendiente',
-                plataforma: 'Steam'
-            });
+    try {
+        // 1. Comprimir imagen
+        const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
 
-            emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, this).then(() => {
-                Swal.fire('¡Pedido Recibido!', 'Revisa tu correo para el pago.', 'success');
-                form.reset();
-                document.getElementById('resultado').style.display = 'none';
-                btnEnviar.disabled = true;
-            });
-        } else {
-            Swal.fire('Lo sentimos', 'Cupo de Steam agotado.', 'error');
-        }
-    }).catch((err) => {
+        // 2. Transacción
+        runTransaction(saldoRef, (saldoActual) => {
+            const actual = saldoActual || 0;
+            if (actual >= costoSteam) return actual - costoSteam; 
+            else return; 
+        }).then((result) => {
+            if (result.committed) {
+                
+                const nuevaOrdenRef = push(ref(db, 'ordenes'));
+                set(nuevaOrdenRef, {
+                    fecha: new Date().toISOString(),
+                    email: form.email.value,
+                    rut: form.rut.value, 
+                    juego: form.juego.value,
+                    precio_pagado: costoCliente, 
+                    precio_steam: costoSteam,
+                    estado: 'pendiente',
+                    plataforma: 'Steam',
+                    comprobante_img: comprobanteBase64 // GUARDAMOS LA IMAGEN EN LA BD
+                });
+
+                emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form).then(() => {
+                    Swal.fire('¡Pedido Recibido!', 'Hemos recibido tu comprobante y pedido.', 'success');
+                    form.reset();
+                    if(previewContainer) previewContainer.style.display = 'none';
+                    document.getElementById('resultado').style.display = 'none';
+                    btnEnviar.disabled = true;
+                });
+            } else {
+                Swal.fire('Lo sentimos', 'Cupo de Steam agotado.', 'error');
+            }
+        });
+    } catch (err) {
         console.error(err);
-        Swal.fire('Error', 'Problema de conexión.', 'error');
-    });
+        Swal.fire('Error', 'Error al procesar la imagen.', 'error');
+    }
 });
 
-// MODO OSCURO (Standard)
+// MODO OSCURO
 const btnTheme = document.getElementById('theme-toggle');
 const body = document.body;
 const iconSun = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>';
