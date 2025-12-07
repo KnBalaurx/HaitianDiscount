@@ -21,7 +21,7 @@ export const db = getDatabase(app);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 
-// --- 2. LÓGICA MODO OSCURO (Centralizada) ---
+// --- 2. LÓGICA MODO OSCURO ---
 export function initTheme() {
     const btnTheme = document.getElementById('theme-toggle');
     const body = document.body;
@@ -52,5 +52,84 @@ export function initTheme() {
                 newBtn.innerHTML = iconMoon;
             }
         });
+    }
+}
+
+// --- 3. LÓGICA DE ZOOM DE IMÁGENES (TAMAÑO UNIFICADO - DESACTIVADO EN MÓVIL) ---
+export function initImageZoom() {
+    const activarZoom = () => {
+        const stepImages = document.querySelectorAll('.step-image-container img');
+        
+        if(stepImages.length === 0) console.log("No se encontraron imágenes para zoom.");
+
+        stepImages.forEach(img => {
+            if (img.dataset.zoomEnabled) return; 
+            
+            const container = img.closest('.step-image-container');
+            
+            if (container) {
+                // SOLO cambiamos el cursor a "lupa" si la pantalla es grande (Desktop)
+                if (window.innerWidth > 768) {
+                    container.style.cursor = "zoom-in"; 
+                } else {
+                    container.style.cursor = "default"; // Cursor normal en móvil
+                }
+
+                container.addEventListener('click', (e) => {
+                    // --- NUEVA VALIDACIÓN RESPONSIVE ---
+                    // Si la pantalla es menor o igual a 768px (Móviles y Tablets verticales)
+                    // detenemos la función aquí. No se abre el zoom.
+                    if (window.innerWidth <= 768) {
+                        return; 
+                    }
+                    // -----------------------------------
+
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    
+                    Swal.fire({
+                        imageUrl: img.src,
+                        imageAlt: img.alt || 'Imagen ampliada',
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        background: 'var(--bg-card)', 
+                        
+                        // --- AJUSTES VISUALES ---
+                        padding: '0',       // Sin margen blanco extra
+                        width: 'auto',      // El ancho lo controla la imagen
+                        backdrop: `rgba(0,0,0,0.9)`, // Fondo muy oscuro para resaltar
+                        // -----------------------
+
+                        customClass: {
+                            popup: 'swal2-no-padding' // Clase auxiliar si fuera necesaria
+                        },
+                        didOpen: () => {
+                            const swalImg = Swal.getImage();
+                            if(swalImg) {
+                                // --- TUS PROPORCIONES PERSONALIZADAS ---
+                                swalImg.style.width = '45vw';  // 45% del ancho de la pantalla
+                                swalImg.style.height = '60vh'; // 60% del alto de la pantalla
+                                
+                                // "contain" asegura que la imagen quepa entera sin estirarse
+                                swalImg.style.objectFit = 'contain'; 
+                                
+                                swalImg.style.backgroundColor = 'transparent'; 
+                                
+                                swalImg.style.margin = '0 auto';
+                                swalImg.style.display = 'block';
+                            }
+                        }
+                    });
+                });
+                
+                img.dataset.zoomEnabled = "true"; 
+            }
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activarZoom);
+    } else {
+        activarZoom();
     }
 }

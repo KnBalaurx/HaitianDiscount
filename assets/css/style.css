@@ -272,7 +272,7 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
 .file-eneba .custom-file-input::file-selector-button { background-color: #a855f7; }
 .file-eneba .custom-file-input::file-selector-button:hover { background-color: #9333ea; }
 
-/* --- NUEVO: ESTILOS PARA IMÁGENES DE PASOS (STEAM) --- */
+/* --- ESTILOS PARA IMÁGENES DE PASOS CON LUPA (SOLO DESKTOP) --- */
 .step-image-container {
     margin-bottom: 20px;
     border-radius: 8px;
@@ -280,15 +280,56 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
     background: var(--bg-body);
+    position: relative; 
+    /* El cursor se define dinámicamente en JS, pero por defecto pointer */
+    cursor: default; 
 }
 
+/* La imagen en sí */
 .step-image {
-    width: 100%;         /* Ocupa todo el ancho disponible de la tarjeta */
-    height: auto;        /* IMPORTANTE: La altura se ajusta sola para mostrar TODA la foto */
-    display: block;      /* Elimina espacios extraños debajo de la imagen */
-    transition: transform 0.3s ease;
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-.step-card:hover .step-image {
-    transform: scale(1.03); /* Efecto zoom suave al pasar el mouse */
+/* --- LÓGICA RESPONSIVE DE LA LUPA --- */
+/* Esta regla aplica SOLO si la pantalla es de PC (mayor a 768px) */
+@media (min-width: 769px) {
+    
+    .step-image-container {
+        cursor: zoom-in; /* Cursor de lupa solo en PC */
+    }
+
+    /* Dibujamos la lupa solo en PC */
+    .step-image-container::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: 50px;
+        height: 50px;
+        /* Icono SVG */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 28px 28px;
+        background-color: rgba(0, 0, 0, 0.4);
+        border-radius: 50%;
+        opacity: 0; /* Invisible inicialmente */
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: none;
+    }
+
+    /* Efectos Hover (Solo PC) */
+    .step-card:hover .step-image {
+        transform: scale(1.03);
+        filter: brightness(0.9);
+    }
+
+    .step-card:hover .step-image-container::after {
+        opacity: 1; /* Aparece la lupa */
+        transform: translate(-50%, -50%) scale(1);
+    }
 }

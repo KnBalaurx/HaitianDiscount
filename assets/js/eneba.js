@@ -1,10 +1,11 @@
 import { ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 // IMPORTAMOS TODO DESDE CONFIG
-import { db, auth, initTheme } from './config.js';
+import { db, auth, initTheme, initImageZoom } from './config.js';
 
-// Iniciar Tema
+// Iniciar Tema y Zoom
 initTheme();
+initImageZoom();
 
 const saldoRef = ref(db, 'presupuesto_eneba');
 const estadoRef = ref(db, 'estado_eneba');
