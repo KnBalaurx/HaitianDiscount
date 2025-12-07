@@ -271,3 +271,24 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
 .file-eneba .upload-box:hover { border-color: #a855f7; }
 .file-eneba .custom-file-input::file-selector-button { background-color: #a855f7; }
 .file-eneba .custom-file-input::file-selector-button:hover { background-color: #9333ea; }
+
+/* --- NUEVO: ESTILOS PARA IMÁGENES DE PASOS (STEAM) --- */
+.step-image-container {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    background: var(--bg-body);
+}
+
+.step-image {
+    width: 100%;         /* Ocupa todo el ancho disponible de la tarjeta */
+    height: auto;        /* IMPORTANTE: La altura se ajusta sola para mostrar TODA la foto */
+    display: block;      /* Elimina espacios extraños debajo de la imagen */
+    transition: transform 0.3s ease;
+}
+
+.step-card:hover .step-image {
+    transform: scale(1.03); /* Efecto zoom suave al pasar el mouse */
+}
