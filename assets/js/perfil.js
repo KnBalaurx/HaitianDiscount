@@ -110,7 +110,7 @@ function guardarDatosUsuario(uid) {
     });
 }
 
-// 4. HISTORIAL (CON IMAGEN CENTRADA)
+// 4. HISTORIAL Y ESTADÍSTICAS
 function cargarHistorial(uid) {
     const ordenesRef = query(ref(db, 'ordenes'), orderByChild('uid'), equalTo(uid));
     
@@ -118,8 +118,16 @@ function cargarHistorial(uid) {
         historyBody.innerHTML = '';
         const data = snapshot.val();
 
+        // Variables para estadísticas
+        let totalAhorrado = 0;
+        let totalJuegos = 0; // Solo cuentan los completados
+
         if (!data) {
             noDataMsg.style.display = 'block';
+            document.getElementById('statAhorro').innerText = '$0';
+            document.getElementById('statJuegos').innerText = '0';
+            document.getElementById('statRango').innerText = 'Novato';
+            document.getElementById('statRango').style.color = '#94a3b8'; // Gris
             return;
         }
         noDataMsg.style.display = 'none';
@@ -127,30 +135,67 @@ function cargarHistorial(uid) {
         const list = Object.values(data).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         list.forEach(orden => {
+            // Render Tabla (Código igual al anterior)
             const fecha = new Date(orden.fecha).toLocaleDateString('es-CL');
             const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(orden.precio_pagado);
             const estado = orden.estado || 'pendiente';
             const plat = orden.plataforma || 'Steam';
             const platClass = plat === 'Eneba' ? 'platform-eneba' : 'platform-steam';
 
-            // LÓGICA DE IMAGEN
             let imgHtml = '<span style="font-size:0.8rem; color:#ccc;">Sin Img</span>';
             if(orden.imagen_juego) {
                 imgHtml = `<img src="${orden.imagen_juego}" class="game-thumb-profile" alt="Juego">`;
             }
 
-            // --- AQUÍ ESTÁ EL CAMBIO: text-align: center ---
             const row = `
                 <tr>
                     <td>${fecha}</td>
-                    <td style="padding: 5px; text-align: center;">${imgHtml}</td> <td style="font-weight:600;">${orden.juego}</td>
+                    <td style="padding: 5px; text-align: center;">${imgHtml}</td> 
+                    <td style="font-weight:600;">${orden.juego}</td>
                     <td class="${platClass}">${plat.toUpperCase()}</td>
                     <td>${monto}</td>
                     <td><span class="status-badge st-${estado}">${estado.toUpperCase()}</span></td>
                 </tr>
             `;
             historyBody.innerHTML += row;
+
+            // --- CÁLCULO DE ESTADÍSTICAS ---
+            if (estado === 'completado') {
+                totalJuegos++;
+                
+                // Calculamos ahorro
+                const original = orden.precio_steam || orden.precio_pagado; 
+                const pagado = orden.precio_pagado;
+                if(original > pagado) {
+                    totalAhorrado += (original - pagado);
+                }
+            }
         });
+
+        // 1. Actualizar números
+        document.getElementById('statAhorro').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalAhorrado);
+        document.getElementById('statJuegos').innerText = totalJuegos;
+
+        // 2. LÓGICA DE RANGOS (NUEVO)
+        const rangoElem = document.getElementById('statRango');
+        let nombreRango = "Novato";
+        let colorRango = "#94a3b8"; // Gris Slate (Default)
+
+        if (totalJuegos >= 3) {
+            nombreRango = "Cazador";
+            colorRango = "#10b981"; // Verde Esmeralda
+        }
+        if (totalJuegos >= 10) {
+            nombreRango = "Veterano";
+            colorRango = "#3b82f6"; // Azul Steam
+        }
+        if (totalJuegos >= 20) {
+            nombreRango = "Leyenda VIP";
+            colorRango = "#f59e0b"; // Dorado
+        }
+
+        rangoElem.innerText = nombreRango;
+        rangoElem.style.color = colorRango;
     });
 }
 
