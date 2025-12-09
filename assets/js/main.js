@@ -56,9 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const inputJuego = document.getElementById('juego');
                     if(inputJuego) inputJuego.value = gameInfo.name;
 
-                    // 2. Mostrar Portada
+                    // 2. Mostrar Portada (CÓDIGO ACTUALIZADO)
                     if (gameInfo.header_image && previewContainer && gameCoverImg) {
+                        // Foto principal
                         gameCoverImg.src = gameInfo.header_image;
+                        
+                        // Foto de fondo (Ambient Glow)
+                        const bgDiv = document.getElementById('gamePreviewBg');
+                        if(bgDiv) {
+                            bgDiv.style.backgroundImage = `url('${gameInfo.header_image}')`;
+                            bgDiv.style.opacity = '1'; // Hacemos que aparezca suavemente
+                        }
+
                         previewContainer.style.display = 'block';
                     }
 

@@ -293,6 +293,51 @@ div:where(.swal2-input) { color: var(--primary) !important; background: var(--bg
     transition: transform 0.3s ease, filter 0.3s ease;
 }
 
+/* --- AMBIENT GLOW EFFECT (PREVIEW JUEGO) --- */
+.game-preview-box {
+    position: relative;
+    overflow: hidden; /* Para que el borrosidad no se salga */
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all 0.5s ease;
+    z-index: 1; /* Para que el contenido flote encima */
+    background: transparent; /* Quitamos fondo sólido si lo había */
+    margin-bottom: 25px;
+}
+
+/* La imagen de fondo borrosa */
+.game-preview-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px) brightness(0.6); /* Borroso y un poco oscuro */
+    z-index: -1; /* Se va al fondo */
+    transform: scale(1.2); /* Zoom para evitar bordes blancos por el blur */
+    opacity: 0; /* Empieza invisible */
+    transition: opacity 0.5s ease;
+}
+
+/* La imagen del juego (Portada) que flota encima */
+.game-preview-box img#gameCover {
+    position: relative;
+    z-index: 2;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Sombra potente */
+    max-height: 220px;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Borde sutil */
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+}
+
+.game-preview-box:hover img#gameCover {
+    transform: translateY(-5px); /* Flota un poco al pasar el mouse */
+}
+
+
 /* --- LÓGICA RESPONSIVE DE LA LUPA --- */
 /* Esta regla aplica SOLO si la pantalla es de PC (mayor a 768px) */
 @media (min-width: 769px) {
