@@ -1,89 +1,248 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam | HaitianDiscount</title>
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.6.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.6.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.6.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ramokami.github.io/HaitianDiscount/">
+    <meta property="og:title" content="Steam -30% Descuento | HaitianDiscount">
+    <meta property="og:description" content="Compra tus juegos de Steam mucho más baratos. Paga con Cuenta RUT y recibe tu Gift al instante.">
+    <meta property="og:image" content="https://ramokami.github.io/HaitianDiscount/assets/img/logo.png">
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Steam -30% Descuento | HaitianDiscount">
+    <meta name="twitter:description" content="Ahorra en tus videojuegos favoritos. Servicio rápido y seguro en Chile.">
+    <meta name="twitter:image" content="https://ramokami.github.io/HaitianDiscount/assets/img/logo.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="shortcut icon" href="assets/img/logo.png">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init("GyDMRqWVvMxC765-L");
+       })();
     </script>
-  </body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EMVPQGPWTE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-EMVPQGPWTE');
+</script>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="brand">HaitianDiscount<span class="dot">.</span></div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="text-link" style="color: var(--accent); font-weight: bold;">Steam</a></li>
+                <li><a href="eneba.html" class="text-link">Eneba</a></li>
+                
+                <li>
+                    <a href="pages/perfil.html" class="nav-icon-link" aria-label="Mi Cuenta">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    </a>
+                </li>
+                
+                <button id="theme-toggle" class="theme-btn" aria-label="Cambiar modo oscuro">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>
+                </button>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <h1>Tus juegos de <span class="highlight">Steam</span>,<br> 30% más baratos.</h1>
+            <p class="subtitle">Gestionamos la compra de tus videojuegos favoritos en Steam optimizando el costo.</p>
+        </div>
+    </header>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Ahorra en 3 Pasos</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-image-container">
+                        <img src="assets/img/Paso_1_steam.png" alt="Copiar URL en Steam" class="step-image">
+                    </div>
+                    <h3>1. Copia el Link</h3>
+                    <p>Ve a Steam, haz clic derecho en la página del juego y selecciona <strong>"Copiar URL de la página"</strong>.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-image-container">
+                        <img src="assets/img/Paso_2_steam.png" alt="Pegar URL en el buscador" class="step-image">
+                    </div>
+                    <h3>2. Pega el Link</h3>
+                    <p>Pega el enlace en nuestro buscador (abajo) y presiona la lupa <span style="color:white; padding:2px 6px; border-radius:4px; font-size:0.8em;">🔍</span>.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-image-container">
+                        <img src="assets/img/Paso_3_steam.png" alt="Calcular precio final" class="step-image">
+                    </div>
+                    <h3>3. Calcula y Paga</h3>
+                    <p>Presiona <strong>"Calcular Precio"</strong> para ver tu descuento final y proceder al pago.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="container">
+            <div class="steam-alert-box">
+                <div class="alert-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </div>
+                <div class="alert-content">
+                    <h4>Requisito de Steam (3 Días)</h4>
+                    <p>Para enviar regalos (Gifts), Steam exige que seamos amigos por <strong>al menos 3 días</strong>. Si es tu primera compra con nosotros, <a href="https://steamcommunity.com/profiles/76561198964150759/" target="_blank" class="alert-link">agréganos a Steam aquí</a> y espera ese plazo.</p>
+                    <p>Si prefieres no esperar el plazo, puedes ir a nuestro apartado de keys de <a href="eneba.html">eneba</a>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="presupuesto" class="section-budget">
+        <div class="container">
+            <div class="budget-card">
+                <div class="budget-info">
+                    <span class="label">Cupo diario disponible</span>
+                    <h2 id="tope-dinero">$0 CLP</h2>
+                </div>
+                <div class="budget-desc">
+                    <p>Actualizamos nuestro cupo en tiempo real. (CUPO PARA STEAM CLP).</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pedido" class="section-form">
+        <div class="container">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h3>Cotizar Steam</h3>
+                    <p>Completa los datos para calcular tu descuento.</p>
+                </div>
+                
+                <form id="gameForm">
+                    <div class="input-group" style="position: relative;">
+                        <label for="steamUrlInput">Pegar Link de Steam (Autocompletar)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="url" id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
+                            <button type="button" id="btnBuscarSteam" class="btn btn-primary" style="width: auto; padding: 0 15px;" title="Buscar datos">🔍</button>
+                        </div>
+                        
+                        <div id="previewContainer" class="game-preview-box">
+                            <div id="gamePreviewBg" class="game-preview-bg"></div>
+                            
+                            <img id="gameCover" src="" alt="Portada del Juego">
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+                    <div class="grid-2">
+                        <div class="input-group"><label>Tu Email</label><input type="email" name="email" id="email" required placeholder="email@ejemplo.com"></div>
+                        <div class="input-group"><label>Nombre Completo</label><input type="text" name="nombre" id="nombre" required placeholder="Ej. Juan Pérez"></div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group"><label>RUT</label><input type="text" name="rut" id="rut" required placeholder="12.345.678-9"></div>
+                        <div class="input-group"><label>Usuario Steam (Opcional)</label><input type="text" name="steam_user" id="steam_user" placeholder="ID o URL perfil"></div>
+                    </div>
+
+                    <div class="input-group"><label>Detalles (Opcional)</label><input type="text" name="detalles" id="detalles" placeholder="Ej. Edición Deluxe"></div>
+                    <div class="divider"></div>
+
+                    <div class="input-group"><label>Nombre del Juego</label><input type="text" name="juego" id="juego" required placeholder="Ej. Elden Ring"></div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Precio Original (Steam)</label>
+                            <input type="number" id="precioSteam" name="precio_original" required placeholder="Precio sin descuento" min="1" step="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Código Promocional</label>
+                            <input type="text" id="codigoInvitado" name="codigo_invitado" placeholder="Código VIP (Opcional)">
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="precio_final_descuento" id="precioFinalInput">
+                    <input type="hidden" name="to_name" value="Admin Steam">
+                    <input type="hidden" name="plataforma_origen" value="Steam">
+
+                    <div id="resultado" class="result-container">
+                        <div class="result-pricing">
+                            <div class="price-row"><span>Precio Steam:</span><span id="res-original" class="strikethrough">$0</span></div>
+                            <div class="price-row savings text-steam"><span>¡Te Ahorras!:</span><span id="res-ahorro">$0</span></div>
+                            <div class="price-row final"><span>A Pagar:</span><span id="res-final">$0</span></div>
+                            <p id="alerta-presupuesto" class="alert-badge hidden">⚠️ Supera el cupo disponible</p>
+                        </div>
+                        <div class="bank-details">
+                            <h4>Datos para Transferencia</h4>
+                            <ul>
+                                <li><strong>Banco:</strong> Banco Estado (Cuenta RUT)</li>
+                                <li><strong>Titular:</strong> Tomás Benjamin Alvarez</li>
+                                <li><strong>RUT:</strong> 22.566.397-1</li>
+                                <li><strong>N° Cuenta:</strong> 22566397</li>
+                                <li><strong>Email:</strong> tomas07wilson@gmail.com</li>
+                            </ul>
+                            
+                            <div class="file-steam"> 
+                                <div class="upload-box">
+                                    <label for="comprobanteInput">Adjuntar Comprobante (Imagen)</label>
+                                    <input type="file" id="comprobanteInput" class="custom-file-input" accept="image/*">
+                                    <span class="small-text">* Requerido para procesar la compra.</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary btn-calc" id="btnCalcular">Calcular Precio</button>
+                        <button type="submit" class="btn btn-primary btn-send" id="btnEnviar" disabled>Enviar Pedido</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <div class="faq-grid">
+                <details class="faq-item">
+                    <summary>¿Es seguro comprar aquí?</summary>
+                    <p>Totalmente. Compramos el juego legítimamente y te lo enviamos como regalo o key.</p>
+                </details>
+                <details class="faq-item">
+                    <summary>¿Cuánto tardan en enviar el juego?</summary>
+                    <p>Generalmente tardamos entre 10 a 30 minutos dentro del horario de atención.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 HaitianDiscount. Servicios Digitales.</p>
+            <p class="contact-info">tomas07wilson@gmail.com</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script type="module" src="assets/js/main.js"></script> 
+    <a href="https://wa.me/56948943497?text=Hola%20HaitianDiscount" class="whatsapp-float" target="_blank">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/></svg>
+    </a>
+</body>
 </html>
