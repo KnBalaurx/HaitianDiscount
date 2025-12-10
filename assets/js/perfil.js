@@ -17,7 +17,6 @@ const profileRut = document.getElementById('profileRut');
 const profileSteam = document.getElementById('profileSteam');
 const btnSaveData = document.getElementById('btnSaveData');
 
-// Estado Validación RUT
 let rutEsValido = false;
 
 if (profileRut) {
@@ -26,7 +25,7 @@ if (profileRut) {
     });
 }
 
-// ADMINS (Tu lista de UIDs)
+// ADMINS
 const ADMIN_UIDS = [
     'y7wKykEchQON3tS22mRhJURsHOv1', 
     'DEKH3yxMy6hCTkdbvwZl4dkFlnc2' 
@@ -46,24 +45,20 @@ onAuthStateChanged(auth, (user) => {
         loginView.classList.add('hidden');
         userView.classList.remove('hidden');
         
-        // Cargar Info Básica en Header
         document.getElementById('userName').innerText = user.displayName || 'Usuario';
         document.getElementById('userEmail').innerText = user.email;
         
-        // Cargar Avatar (Usando foto de Google)
         const avatarImg = document.getElementById('userAvatar');
         if(user.photoURL && avatarImg) {
             avatarImg.src = user.photoURL;
         }
 
-        // Botón Admin
         if (ADMIN_UIDS.includes(user.uid)) {
             adminBtn.classList.remove('hidden');
         } else {
             adminBtn.classList.add('hidden');
         }
 
-        // CARGAR DATOS COMPLETOS
         cargarHistorial(user.uid);
         cargarDatosUsuario(user.uid);
 
@@ -82,12 +77,10 @@ function cargarDatosUsuario(uid) {
         if (snapshot.exists()) {
             const data = snapshot.val();
             if(profileNombre) profileNombre.value = data.nombre || '';
-            
             if(profileRut) {
                 profileRut.value = data.rut || '';
                 if(profileRut.value) profileRut.dispatchEvent(new Event('input'));
             }
-            
             if(profileSteam) profileSteam.value = data.steam_user || '';
         }
     });
@@ -116,7 +109,7 @@ function guardarDatosUsuario(uid) {
     });
 }
 
-// 4. HISTORIAL Y ESTADÍSTICAS (RANKING)
+// 4. HISTORIAL, ESTADÍSTICAS Y RANGOS VISUALES
 function cargarHistorial(uid) {
     const ordenesRef = query(ref(db, 'ordenes'), orderByChild('uid'), equalTo(uid));
     
@@ -124,9 +117,15 @@ function cargarHistorial(uid) {
         historyBody.innerHTML = '';
         const data = snapshot.val();
 
-        // Variables para estadísticas
         let totalAhorrado = 0;
-        let totalJuegos = 0; // Solo completados cuentan para el rango
+        let totalJuegos = 0;
+
+        // Limpieza inicial visual
+        const avatarContainer = document.querySelector('.profile-avatar-container');
+        if(avatarContainer) {
+            // Quitamos todas las clases de rango para empezar limpio
+            avatarContainer.classList.remove('avatar-novato', 'avatar-cazador', 'avatar-veterano', 'avatar-leyenda');
+        }
 
         if (!data) {
             noDataMsg.style.display = 'block';
@@ -134,6 +133,7 @@ function cargarHistorial(uid) {
             document.getElementById('statJuegos').innerText = '0';
             const r = document.getElementById('statRango');
             if(r) { r.innerText = 'Novato'; r.style.color = '#94a3b8'; }
+            if(avatarContainer) avatarContainer.classList.add('avatar-novato'); // Rango por defecto
             return;
         }
         noDataMsg.style.display = 'none';
@@ -164,11 +164,8 @@ function cargarHistorial(uid) {
             `;
             historyBody.innerHTML += row;
 
-            // --- CÁLCULO DE ESTADÍSTICAS ---
             if (estado === 'completado') {
                 totalJuegos++;
-                
-                // Calculamos el ahorro (Precio Original - Precio Pagado)
                 const original = orden.precio_steam || orden.precio_pagado; 
                 const pagado = orden.precio_pagado;
                 if(original > pagado) {
@@ -177,36 +174,45 @@ function cargarHistorial(uid) {
             }
         });
 
-        // 1. Actualizar DOM
+        // 1. DOM Stats
         document.getElementById('statAhorro').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalAhorrado);
         document.getElementById('statJuegos').innerText = totalJuegos;
 
-        // 2. LÓGICA DE RANGOS
+        // 2. LÓGICA DE RANGOS (TEXTO + MARCO DE AVATAR)
         const rangoElem = document.getElementById('statRango');
+        
+        let nombreRango = "Novato";
+        let colorRango = "#94a3b8"; // Gris
+        let claseAvatar = "avatar-novato";
+
+        if (totalJuegos >= 3) {
+            nombreRango = "Cazador";
+            colorRango = "#10b981"; // Verde
+            claseAvatar = "avatar-cazador";
+        }
+        if (totalJuegos >= 10) {
+            nombreRango = "Veterano";
+            colorRango = "#3b82f6"; // Azul
+            claseAvatar = "avatar-veterano";
+        }
+        if (totalJuegos >= 20) {
+            nombreRango = "Leyenda VIP";
+            colorRango = "#f59e0b"; // Dorado
+            claseAvatar = "avatar-leyenda";
+        }
+
         if(rangoElem) {
-            let nombreRango = "Novato";
-            let colorRango = "#94a3b8"; // Gris Slate
-
-            if (totalJuegos >= 3) {
-                nombreRango = "Cazador";
-                colorRango = "#10b981"; // Verde Esmeralda
-            }
-            if (totalJuegos >= 10) {
-                nombreRango = "Veterano";
-                colorRango = "#3b82f6"; // Azul Steam
-            }
-            if (totalJuegos >= 20) {
-                nombreRango = "Leyenda VIP";
-                colorRango = "#f59e0b"; // Dorado
-            }
-
             rangoElem.innerText = nombreRango;
             rangoElem.style.color = colorRango;
+        }
+
+        if(avatarContainer) {
+            avatarContainer.classList.add(claseAvatar);
         }
     });
 }
 
-// 5. PESTAÑAS
+// 5. TABS
 const tabs = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 
