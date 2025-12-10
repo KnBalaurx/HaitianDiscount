@@ -162,6 +162,34 @@ div:where(.swal2-title) { color: var(--primary) !important; }
     display: block;
 }
 
+/* --- ESTILOS PARA GRÁFICOS --- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.chart-card {
+    min-height: 300px;
+}
+
+.chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+/* Ajustes para Tabs en móvil */
+.admin-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.tab-btn {
+    white-space: nowrap;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
