@@ -4,20 +4,28 @@ Repositorio del Descuento Haitiano
 Directory structure:
 └── ramokami-haitiandiscount/
     ├── README.md
-    ├── eneba.html
-    ├── index.html
-    ├── assets/
-    │   ├── css/
-    │   │   ├── admin.css
-    │   │   ├── perfil.css
-    │   │   └── style.css
-    │   └── js/
-    │       ├── admin.js
-    │       ├── config.js
-    │       ├── storeLogic.js
-    │       ├── eneba.js
-    │       ├── main.js
-    │       └── perfil.js
-    └── pages/
-        ├── admin.html
-        └── perfil.html
+    ├── firebase.json
+    ├── .firebaserc
+    ├── public/
+    │   ├── 404.html
+    │   ├── eneba.html
+    │   ├── index.html
+    │   ├── assets/
+    │   │   ├── css/
+    │   │   │   ├── admin.css
+    │   │   │   ├── perfil.css
+    │   │   │   └── style.css
+    │   │   └── js/
+    │   │       ├── admin.js
+    │   │       ├── config.js
+    │   │       ├── eneba.js
+    │   │       ├── main.js
+    │   │       ├── perfil.js
+    │   │       └── storeLogic.js
+    │   └── pages/
+    │       ├── admin.html
+    │       └── perfil.html
+    └── .github/
+        └── workflows/
+            ├── firebase-hosting-merge.yml
+            └── firebase-hosting-pull-request.yml
