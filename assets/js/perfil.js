@@ -234,7 +234,7 @@ function cargarWishlist(uid) {
         const wishlistBody = document.getElementById('wishlistBody');
         const noWishMsg = document.getElementById('noWishlistMsg');
         
-        if(!wishlistBody) return; // Por seguridad
+        if(!wishlistBody) return; 
         
         wishlistBody.innerHTML = '';
         const data = snapshot.val();
@@ -246,6 +246,7 @@ function cargarWishlist(uid) {
         noWishMsg.style.display = 'none';
 
         Object.entries(data).forEach(([gameId, item]) => {
+            // CAMBIO AQUÍ: Botón Comprar en lugar de Copiar
             const row = `
                 <tr>
                     <td style="text-align:center;">
@@ -253,10 +254,12 @@ function cargarWishlist(uid) {
                     </td>
                     <td>
                         <div style="font-weight:700; color:var(--primary);">${item.nombre}</div>
-                        <a href="${item.url}" target="_blank" style="font-size:0.8rem; color:var(--accent);">Ver en Steam</a>
+                        <a href="${item.url}" target="_blank" style="font-size:0.8rem; color:var(--text-light); text-decoration: underline;">Ver en Steam</a>
                     </td>
                     <td>
-                        <button onclick="copiarLink('${item.url}')" class="btn btn-primary btn-sm" style="margin-right:5px;">Copiar Link</button>
+                        <button onclick="irAComprar('${item.url}')" class="btn btn-primary btn-sm" style="margin-right:5px; background-color: var(--accent); border: none;">
+                            Comprar Ahora
+                        </button>
                         <button onclick="borrarDeseado('${uid}', '${gameId}')" class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);">X</button>
                     </td>
                 </tr>
@@ -266,14 +269,17 @@ function cargarWishlist(uid) {
     });
 }
 
-// Funciones globales para los botones de la tabla
-window.borrarDeseado = (uid, gameId) => {
-    remove(ref(db, `usuarios/${uid}/wishlist/${gameId}`));
+// --- NUEVA FUNCIÓN PARA REDIRIGIR ---
+window.irAComprar = (url) => {
+    // Detectamos si es Eneba o Steam para enviarlo a la página correcta
+    // (Asumiendo que estás en /pages/perfil.html, subimos un nivel con ../)
+    if(url.includes('eneba')) {
+        window.location.href = `../eneba.html?auto=${encodeURIComponent(url)}`;
+    } else {
+        window.location.href = `../index.html?auto=${encodeURIComponent(url)}`;
+    }
 };
 
-window.copiarLink = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-        Toast.fire({ icon: 'success', title: 'Link copiado al portapapeles' });
-    });
+window.borrarDeseado = (uid, gameId) => {
+    remove(ref(db, `usuarios/${uid}/wishlist/${gameId}`));
 };
