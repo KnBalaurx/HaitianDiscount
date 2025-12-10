@@ -225,12 +225,17 @@ function iniciarListeners() {
         // [Filtro Clave] Solo las órdenes COMPLETADAS
         const ordenesCompletadas = todasLasOrdenes.filter(o => o.estado === 'completado');
 
-        // 1. Gráfico Ventas Semanales
+        // 1. Gráfico Ventas Semanales (CORREGIDO FECHAS)
         const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const ventasPorDia = Array(7).fill(0);
+        
+        // "Normalizamos" hoy a las 00:00:00 horas para comparar solo fechas puras
         const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); 
+
         const etiquetasDias = [];
 
+        // Generar etiquetas de los últimos 7 días
         for (let i = 6; i >= 0; i--) {
             const d = new Date(hoy);
             d.setDate(d.getDate() - i);
@@ -238,15 +243,20 @@ function iniciarListeners() {
         }
 
         ordenesCompletadas.forEach(orden => {
+            // Normalizamos también la fecha de la orden a las 00:00:00
             const fechaOrden = new Date(orden.fecha);
-            const diffTime = Math.abs(hoy - fechaOrden);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            fechaOrden.setHours(0, 0, 0, 0);
+
+            // Calculamos la diferencia en milisegundos entre fechas puras
+            const diffTime = hoy.getTime() - fechaOrden.getTime();
+            // Convertimos a días enteros
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
             
-            if (diffDays <= 7) {
-                const index = 6 - (Math.floor((hoy - fechaOrden) / (1000 * 60 * 60 * 24)));
-                if(index >= 0 && index <= 6) {
-                    ventasPorDia[index] += parseInt(orden.precio_pagado) || 0;
-                }
+            // Si la venta fue hace entre 0 y 6 días
+            if (diffDays >= 0 && diffDays <= 6) {
+                // index 6 es HOY (diff 0), index 0 es hace 6 días (diff 6)
+                const index = 6 - diffDays;
+                ventasPorDia[index] += parseInt(orden.precio_pagado) || 0;
             }
         });
 
@@ -273,12 +283,11 @@ function iniciarListeners() {
             });
         }
 
-        // 2. Gráfico Plataformas (CORREGIDO)
+        // 2. Gráfico Plataformas (CON LA CORRECCIÓN ANTERIOR MANTENIDA)
         let steamCount = 0;
         let enebaCount = 0;
         
         ordenesCompletadas.forEach(orden => { 
-            // Normalizamos a minúsculas para evitar errores de "Steam" vs "steam"
             const plat = (orden.plataforma || '').toLowerCase();
             
             if (plat.includes('steam')) {
@@ -286,7 +295,6 @@ function iniciarListeners() {
             } else if (plat.includes('eneba')) {
                 enebaCount++;
             }
-            // Si no es ninguno (pedidos viejos corruptos), los ignoramos
         });
 
         const ctxPlatform = document.getElementById('platformChart');
@@ -309,7 +317,7 @@ function iniciarListeners() {
             });
         }
     }
-
+    
     // Funciones Globales
     window.verComprobante = (id) => {
         Swal.fire({ title: 'Comprobante', imageUrl: window.imagenesComprobantes[id], imageAlt: 'Comprobante', showCloseButton: true });
