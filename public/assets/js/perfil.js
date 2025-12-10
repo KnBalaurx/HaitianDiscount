@@ -25,12 +25,6 @@ if (profileRut) {
     });
 }
 
-// ADMINS (IDs con permiso para ver botón Admin)
-const ADMIN_UIDS = [
-    'y7wKykEchQON3tS22mRhJURsHOv1', 
-    'DEKH3yxMy6hCTkdbvwZl4dkFlnc2' 
-];
-
 // --- 1. AUTHENTICATION ---
 document.getElementById('btnGoogleLogin').addEventListener('click', () => {
     signInWithPopup(auth, provider).catch(err => Swal.fire('Error', err.message, 'error'));
@@ -53,12 +47,23 @@ onAuthStateChanged(auth, (user) => {
             avatarImg.src = user.photoURL;
         }
 
-        if (ADMIN_UIDS.includes(user.uid)) {
-            adminBtn.classList.remove('hidden');
-        } else {
+        // --- VERIFICACIÓN DE ADMIN DINÁMICA ---
+        // Consultamos la base de datos para ver si este usuario es admin
+        const adminCheckRef = ref(db, `admins/${user.uid}`);
+        get(adminCheckRef).then((snapshot) => {
+            if (snapshot.exists() && snapshot.val() === true) {
+                // Si está en la BD como true, mostramos el botón
+                adminBtn.classList.remove('hidden');
+            } else {
+                // Si no, lo ocultamos
+                adminBtn.classList.add('hidden');
+            }
+        }).catch((error) => {
+            console.error("Error verificando admin:", error);
             adminBtn.classList.add('hidden');
-        }
+        });
 
+        // Cargamos el resto de datos del usuario
         cargarHistorial(user.uid);
         cargarDatosUsuario(user.uid);
         cargarWishlist(user.uid);
