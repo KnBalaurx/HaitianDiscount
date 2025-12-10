@@ -46,11 +46,18 @@
         <div id="userView" class="hidden">
             
             <div class="user-header">
-                <div style="flex:1;">
-                    <h3 id="userName">Hola, Usuario</h3>
-                    <p style="font-size: 0.9rem; color: var(--text-light);" id="userEmail">Cargando...</p>
+                <div class="user-profile-group">
+                    <div class="profile-avatar-container">
+                        <img id="userAvatar" src="../assets/img/default-avatar.png" alt="Avatar" class="profile-avatar" onerror="this.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'">
+                    </div>
+
+                    <div class="profile-text-info">
+                        <h3 id="userName">Cargando...</h3>
+                        <p id="userEmail" style="font-size: 0.9rem; color: var(--text-light); margin-top: 2px;">...</p>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center;">
+
+                <div class="user-actions-group">
                     <a href="admin.html" id="adminBtn" class="btn-admin-access hidden" target="_blank">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
                         Panel Admin
