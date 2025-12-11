@@ -1,11 +1,9 @@
 /* ARCHIVO: assets/js/admin.js */
 import { ref, onValue, set, update, remove, child, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-// IMPORTAMOS LA CONFIGURACIÓN CENTRALIZADA
 import { db, auth, provider, initTheme, EMAIL_CONFIG, initEmailService } from './config.js';
 
 initTheme();
-// INICIALIZAR EMAILJS
 initEmailService();
 
 // DOM Elements
@@ -72,37 +70,31 @@ document.getElementById('btnLogout').addEventListener('click', () => {
     signOut(auth).then(() => window.location.reload());
 });
 
-// --- FUNCIÓN DE ENVÍO DE CORREO (EMAILJS + LINKS DINÁMICOS) ---
-async function sendSurveyEmail(orderId, customerEmail, gameTitle) {
+// --- FUNCIÓN DE ENVÍO DE CORREO ---
+async function sendSurveyEmail(orderId, customerEmail, gameTitle, gameKey = null) {
     if (typeof emailjs === 'undefined') {
         Swal.fire('Error', 'EmailJS no está cargado.', 'error');
         return false;
     }
 
-    // 1. DETECCIÓN AUTOMÁTICA DE DOMINIO
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     const productionHost = "https://haitiandiscount.web.app";
     const baseUrl = isLocal 
         ? `http://${window.location.host}/public/pages/encuesta.html` 
         : `${productionHost}/pages/encuesta.html`;
         
-    console.log("Generando links de encuesta para:", baseUrl);
-
-    // 2. CONSTRUCCIÓN DE PARÁMETROS PARA LA PLANTILLA
     const templateParams = {
-        to_email: customerEmail,       // Destinatario
-        game_title: gameTitle,         // {{game_title}}
-        order_id: orderId,             // {{order_id}}
-        current_year: new Date().getFullYear(), // {{current_year}}
-        
-        // 3. GENERACIÓN DE LINKS DE ESTRELLAS
-        link_rating_5: `${baseUrl}?order=${orderId}&rating=5`, // {{link_rating_5}}
-        link_rating_3: `${baseUrl}?order=${orderId}&rating=3`, // {{link_rating_3}}
-        link_rating_1: `${baseUrl}?order=${orderId}&rating=1`  // {{link_rating_1}}
+        to_email: customerEmail,
+        game_title: gameTitle,
+        order_id: orderId,
+        game_key: gameKey || "Ver en tu perfil",
+        current_year: new Date().getFullYear(),
+        link_rating_5: `${baseUrl}?order=${orderId}&rating=5`,
+        link_rating_3: `${baseUrl}?order=${orderId}&rating=3`,
+        link_rating_1: `${baseUrl}?order=${orderId}&rating=1`
     };
 
     try {
-        // USAMOS CONFIG CENTRALIZADA
         const response = await emailjs.send(
             EMAIL_CONFIG.SERVICE_ID, 
             EMAIL_CONFIG.TEMPLATE_SURVEY, 
@@ -110,15 +102,13 @@ async function sendSurveyEmail(orderId, customerEmail, gameTitle) {
         );
 
         if (response.status === 200) {
-            Swal.fire('¡Enviado!', `Correo de finalización enviado a ${customerEmail}.`, 'success');
+            Swal.fire('¡Enviado!', `Correo enviado a ${customerEmail}.`, 'success');
             return true;
         } else {
-            Swal.fire('Error', `Estado de envío: ${response.status}`, 'error');
             return false;
         }
     } catch (error) {
         console.error("Fallo EmailJS:", error);
-        Swal.fire('Error de API', 'No se pudo enviar el correo. Revisa la consola.', 'error');
         return false;
     }
 }
@@ -127,7 +117,7 @@ async function sendSurveyEmail(orderId, customerEmail, gameTitle) {
 // 2. DATA LISTENERS
 function iniciarListeners() {
     
-    // --- GESTIÓN TIENDA (STEAM/ENEBA) ---
+    // --- GESTIÓN TIENDA ---
     const saldoSteamRef = ref(db, 'presupuesto_steam');
     const estadoSteamRef = ref(db, 'estado_steam');
     onValue(saldoSteamRef, (s) => document.getElementById('budgetSteamDisplay').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(s.val()||0));
@@ -155,6 +145,7 @@ function iniciarListeners() {
         document.getElementById('statusEnebaDisplay').innerHTML = estEneba === 'abierto' ? '<span class="status-badge status-open">ABIERTA ONLINE</span>' : '<span class="status-badge status-closed">CERRADA</span>';
     });
     document.getElementById('btnToggleEneba').addEventListener('click', () => set(estadoEnebaRef, estEneba === 'abierto' ? 'cerrado' : 'abierto'));
+    
     // --- VIP ---
     const vipRef = ref(db, 'codigos_vip');
     onValue(vipRef, (snap) => {
@@ -180,7 +171,7 @@ function iniciarListeners() {
         Swal.fire({ title: '¿Eliminar?', icon: 'warning', showCancelButton: true }).then((r) => { if (r.isConfirmed) remove(child(vipRef, key)); });
     };
 
-    // --- PEDIDOS (TABLA Y GRÁFICOS) ---
+    // --- PEDIDOS ---
     const ordenesRef = ref(db, 'ordenes');
     let todasLasOrdenes = [];
     const searchInput = document.getElementById('searchInput');
@@ -189,12 +180,10 @@ function iniciarListeners() {
     onValue(ordenesRef, (snap) => {
         const data = snap.val();
         todasLasOrdenes = []; 
-
         if (data) {
             todasLasOrdenes = Object.entries(data).map(([id, info]) => ({ id, ...info }))
                                      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         }
-        
         renderizarTabla();
         actualizarKPIs();     
         actualizarGraficos(); 
@@ -225,33 +214,58 @@ function iniciarListeners() {
             const estado = orden.estado || 'pendiente';
             const plat = orden.plataforma || 'Steam';
             const platStyle = plat === 'Eneba' ? 'color: #a855f7;' : 'color: #2563eb;';
-            
-            let btnComprobante = '<span style="color:#ccc; font-size:0.7rem;">Sin foto</span>';
+            const tieneKey = orden.game_key ? '<span title="Key Entregada">🔑</span>' : '';
+
+            // BOTÓN VER FOTO: Estilo pildora, centrado
+            let btnComprobante = '<span style="color:#ccc; font-size:0.7rem; display:block; margin-top:4px;">Sin foto</span>';
             if(orden.comprobante_img) {
                 window.imagenesComprobantes[orden.id] = orden.comprobante_img;
-                btnComprobante = `<button class="btn btn-sm" style="background:transparent; border:1px solid #64748b; color:#64748b; padding:2px 6px; font-size:0.7rem; margin-top:4px;" onclick="verComprobante('${orden.id}')">📷 Ver Foto</button>`;
+                btnComprobante = `<button class="btn-foto" onclick="verComprobante('${orden.id}')">Ver Foto</button>`;
+            }
+
+            // BOTONES DE ACCIÓN: CENTRADOS
+            let actionBtnsHtml = `<button class="btn btn-danger btn-sm" onclick="borrarOrden('${orden.id}')" title="Borrar">X</button>`;
+            
+            if (plat === 'Eneba' && estado !== 'cancelado') {
+                actionBtnsHtml = `
+                    <button class="btn btn-sm" style="background: #a855f7; color: white; border:none;" onclick="iniciarEntregaKey('${orden.id}')" title="Entregar Key">
+                        🔑
+                    </button>
+                    ${actionBtnsHtml}
+                `;
             }
 
             const fila = `
                 <tr>
-                    <td style="font-size: 0.8rem; color: #64748b;">${fecha}</td>
-                    <td>
-                        <div style="font-weight:600; font-size:0.9rem;">${orden.email}</div>
-                        <div style="font-size:0.75rem; color:#64748b;">RUT: ${orden.rut || 'N/A'}</div>
+                    <td class="col-fecha" style="font-size: 0.8rem; color: #64748b;">${fecha}</td>
+                    <td class="col-usuario">
+                        <div class="cell-content">
+                            <div class="text-primary" title="${orden.email}">${orden.email}</div>
+                            <div class="text-secondary">RUT: ${orden.rut || 'N/A'}</div>
+                        </div>
                     </td>
-                    <td>
-                        <div style="${platStyle} font-weight: bold; font-size: 0.75rem; margin-bottom:2px;">${plat.toUpperCase()}</div>
-                        <div style="font-weight:500; font-size:0.9rem;">${orden.juego}</div>
+                    <td class="col-juego">
+                        <div class="cell-content">
+                            <div style="${platStyle} font-weight: bold; font-size: 0.75rem; margin-bottom:2px;">${plat.toUpperCase()} ${tieneKey}</div>
+                            <div class="text-primary" title="${orden.juego}">${orden.juego}</div>
+                        </div>
                     </td>
-                    <td><div style="font-weight:bold; font-size:0.95rem;">${monto}</div>${btnComprobante}</td>
-                    <td>
+                    <td class="col-precio">
+                        <div style="font-weight:bold; font-size:0.95rem;">${monto}</div>
+                        ${btnComprobante}
+                    </td>
+                    <td class="col-estado">
                         <select onchange="cambiarEstado('${orden.id}', this.value)" class="status-select status-${estado}">
                             <option value="pendiente" ${estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
                             <option value="completado" ${estado === 'completado' ? 'selected' : ''}>✅ Completado</option>
                             <option value="cancelado" ${estado === 'cancelado' ? 'selected' : ''}>🚫 Cancelado</option>
                         </select>
                     </td>
-                    <td><button class="btn btn-danger btn-sm" onclick="borrarOrden('${orden.id}')">X</button></td>
+                    <td class="col-accion">
+                        <div class="action-cell-content">
+                            ${actionBtnsHtml}
+                        </div>
+                    </td>
                 </tr>`;
             ordersList.innerHTML += fila;
         });
@@ -260,7 +274,7 @@ function iniciarListeners() {
     searchInput.addEventListener('input', renderizarTabla);
     filterStatus.addEventListener('change', renderizarTabla);
 
-    // --- LÓGICA DE GRÁFICOS Y KPIs ---
+    // --- KPI & Graficos ---
     function actualizarKPIs() {
         const ordenesCompletadas = todasLasOrdenes.filter(o => o.estado === 'completado');
         const pendientes = todasLasOrdenes.filter(o => o.estado === 'pendiente');
@@ -272,7 +286,6 @@ function iniciarListeners() {
 
     function actualizarGraficos() {
         const ordenesCompletadas = todasLasOrdenes.filter(o => o.estado === 'completado');
-        // 1. Gráfico Ventas Semanales
         const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const ventasPorDia = Array(7).fill(0);
         const hoy = new Date();
@@ -283,13 +296,11 @@ function iniciarListeners() {
             d.setDate(d.getDate() - i);
             etiquetasDias.push(diasSemana[d.getDay()]);
         }
-
         ordenesCompletadas.forEach(orden => {
             const fechaOrden = new Date(orden.fecha);
             fechaOrden.setHours(0, 0, 0, 0);
             const diffTime = hoy.getTime() - fechaOrden.getTime();
             const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
-            
             if (diffDays >= 0 && diffDays <= 6) {
                 const index = 6 - diffDays;
                 ventasPorDia[index] += parseInt(orden.precio_pagado) || 0;
@@ -300,25 +311,10 @@ function iniciarListeners() {
             if (salesChartInstance) salesChartInstance.destroy();
             salesChartInstance = new Chart(ctxSales, {
                 type: 'bar',
-                data: {
-                    labels: etiquetasDias,
-                    datasets: [{
-                        label: 'Ventas (CLP)',
-                        data: ventasPorDia,
-                        backgroundColor: '#2563eb',
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
+                data: { labels: etiquetasDias, datasets: [{ label: 'Ventas (CLP)', data: ventasPorDia, backgroundColor: '#2563eb', borderRadius: 5 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
         }
-
-        // 2. Gráfico Plataformas
         let steamCount = 0;
         let enebaCount = 0;
         ordenesCompletadas.forEach(orden => { 
@@ -331,18 +327,8 @@ function iniciarListeners() {
             if (platformChartInstance) platformChartInstance.destroy();
             platformChartInstance = new Chart(ctxPlatform, {
                 type: 'doughnut',
-                data: {
-                    labels: ['Steam', 'Eneba'],
-                    datasets: [{
-                        data: [steamCount, enebaCount],
-                        backgroundColor: ['#2563eb', '#a855f7'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
+                data: { labels: ['Steam', 'Eneba'], datasets: [{ data: [steamCount, enebaCount], backgroundColor: ['#2563eb', '#a855f7'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
     }
@@ -350,6 +336,54 @@ function iniciarListeners() {
     // Funciones Globales
     window.verComprobante = (id) => {
         Swal.fire({ title: 'Comprobante', imageUrl: window.imagenesComprobantes[id], imageAlt: 'Comprobante', showCloseButton: true });
+    };
+
+    window.iniciarEntregaKey = async (id) => {
+        const ordenRef = ref(db, `ordenes/${id}`);
+        try {
+            const snapshot = await get(ordenRef);
+            if(!snapshot.exists()) return;
+            const orden = snapshot.val();
+
+            const { value: keyIngresada } = await Swal.fire({
+                title: 'Entrega de Key Eneba',
+                input: 'text',
+                inputLabel: `Juego: ${orden.juego}`,
+                inputPlaceholder: 'XXXXX-XXXXX-XXXXX',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmar y Enviar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#a855f7',
+                inputValue: orden.game_key || '', 
+                inputValidator: (value) => {
+                    if (!value) {
+                        return '¡Debes escribir la key!';
+                    }
+                }
+            });
+
+            if (keyIngresada) {
+                Swal.fire({ title: 'Enviando correo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                const emailSent = await sendSurveyEmail(id, orden.email, orden.juego, keyIngresada);
+
+                if(emailSent) {
+                    await update(ordenRef, {
+                        game_key: keyIngresada,
+                        estado: 'completado',
+                        fecha_completado: new Date().toISOString()
+                    });
+                    
+                    Swal.fire({ icon: 'success', title: '¡Key enviada y Pedido completado!' });
+                } else {
+                    Swal.fire('Error', 'Falló el envío del correo. No se guardaron cambios.', 'error');
+                }
+            }
+
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Error', 'Ocurrió un error inesperado.', 'error');
+        }
     };
 
     window.cambiarEstado = async (id, nuevoEstado) => {
@@ -362,7 +396,7 @@ function iniciarListeners() {
             const costoOriginal = orden.precio_steam; 
             const plataforma = orden.plataforma;
             const estadoOriginal = orden.estado;
-            // --- LÓGICA DE REEMBOLSO ---
+            
             if (nuevoEstado === 'cancelado' && estadoOriginal !== 'cancelado') {
                 let presupuestoRefStr = plataforma === 'Steam' ? 'presupuesto_steam' : 'presupuesto_eneba';
                 if (costoOriginal > 0) {
@@ -372,69 +406,67 @@ function iniciarListeners() {
                 }
             }
             
-            // --- LÓGICA DE COMPLETADO + EMAIL ---
-            if (nuevoEstado === 'completado' && estadoOriginal !== 'completado') {
+            if (plataforma === 'Eneba' && nuevoEstado === 'completado') {
+                document.querySelector(`[onchange="cambiarEstado('${id}', this.value)"]`).value = estadoOriginal;
+                window.iniciarEntregaKey(id); 
+                return;
+            }
+
+            if (plataforma !== 'Eneba' && nuevoEstado === 'completado' && estadoOriginal !== 'completado') {
                 const result = await Swal.fire({
-                    title: 'Confirmar Pedido',
-                    text: `El pedido pasará a COMPLETADO y se enviará la encuesta a ${orden.email}. ¿Continuar?`,
+                    title: 'Confirmar Pedido Steam',
+                    text: `El pedido pasará a COMPLETADO y se enviará correo a ${orden.email}.`,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: 'Sí, Completar y Enviar',
-                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Sí, Completar',
                     confirmButtonColor: '#10b981'
                 });
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Enviando correo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    // Intentar enviar el correo
-                    const emailSent = await sendSurveyEmail(id, orden.email, orden.juego);
+                    const emailSent = await sendSurveyEmail(id, orden.email, orden.juego, null);
                     if (emailSent) {
-                        // Si se envió bien, actualizar DB
                         await update(ordenRef, { 
                             estado: nuevoEstado, 
                             fecha_completado: new Date().toISOString() 
                         });
-                        Toast.fire({ icon: 'success', title: 'Pedido completado y correo enviado' });
+                        Toast.fire({ icon: 'success', title: 'Pedido completado' });
                     } else {
-                        // Si falló el correo, revertir visualmente y avisar
                         document.querySelector(`[onchange="cambiarEstado('${id}', this.value)"]`).value = estadoOriginal;
-                        Swal.fire('Error', 'No se pudo enviar el correo. El estado NO se ha cambiado en la base de datos.', 'error');
-                        return;
+                        Swal.fire('Error', 'No se pudo enviar el correo.', 'error');
                     }
                 } else {
-                    // Cancelado por el usuario en el modal
                     document.querySelector(`[onchange="cambiarEstado('${id}', this.value)"]`).value = estadoOriginal;
-                    return;
                 }
-            } else {
-                // Otros cambios de estado (ej: a Pendiente o Cancelado)
-                await update(ordenRef, { 
-                    estado: nuevoEstado, 
-                    fecha_completado: (nuevoEstado === 'completado' ? orden.fecha_completado || null : null) 
-                });
-                Toast.fire({ icon: 'success', title: 'Estado actualizado' });
+                return;
             }
+
+            await update(ordenRef, { 
+                estado: nuevoEstado, 
+                fecha_completado: (nuevoEstado === 'completado' ? orden.fecha_completado || null : null) 
+            });
+            Toast.fire({ icon: 'success', title: 'Estado actualizado' });
 
         } catch (error) { 
             console.error(error);
             Toast.fire({ icon: 'error', title: 'Error interno' });
         }
     };
+
     window.borrarOrden = (id) => {
         Swal.fire({ title: '¿Borrar?', text: "Se perderá el registro.", icon: 'warning', showCancelButton: true }).then((r) => { if (r.isConfirmed) remove(child(ordenesRef, id)); });
     };
 }
 
-// TABS LOGIC
-document.addEventListener('DOMContentLoaded', () => {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const contents = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            contents.forEach(c => c.classList.remove('active'));
-            tab.classList.add('active');
-            const targetId = tab.getAttribute('data-target');
-            document.getElementById(targetId).classList.add('active');
-        });
+const tabs = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.tab-content');
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        const targetId = tab.getAttribute('data-target');
+        const targetElement = document.getElementById(targetId);
+        if(targetElement) targetElement.classList.add('active');
     });
 });

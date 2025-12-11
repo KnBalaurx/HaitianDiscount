@@ -13,8 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-   
-    
     <style>
         .section-header { margin: 30px 0 15px; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
         .tag-steam { color: #2563eb; background: rgba(37, 99, 235, 0.1); padding: 5px 10px; border-radius: 6px; }
@@ -180,16 +178,17 @@
                         <option value="cancelado">🚫 Cancelados</option>
                     </select>
                 </div>
-                <div style="overflow-x: auto;">
+                
+                <div class="table-container">
                     <table class="admin-table orders-table">
                         <thead>
                             <tr>
-                                <th>Fecha</th>
-                                <th>Email / Rut</th>
-                                <th>Juego / Plataforma</th>
-                                <th>Total Pagado</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
+                                <th class="col-fecha">Fecha</th>
+                                <th class="col-usuario">Email / Rut</th>
+                                <th class="col-juego">Juego / Plataforma</th>
+                                <th class="col-precio">Total</th>
+                                <th class="col-estado">Estado</th>
+                                <th class="col-accion">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="ordersList">

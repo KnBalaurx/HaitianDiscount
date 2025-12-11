@@ -5,19 +5,21 @@
     --bg-body: #f1f5f9;
     --bg-card: #ffffff;
     --text-main: #334155;
+    --text-light: #64748b;
     --danger: #ef4444;
     --success: #10b981;
     --border: #e2e8f0;
     --radius: 12px;
 }
 
-/* --- NUEVO: MODO OSCURO --- */
+/* --- MODO OSCURO --- */
 body.dark-mode {
     --primary: #f1f5f9;       
     --accent: #60a5fa;        
     --bg-body: #0f172a;       
-    --bg-card: #1e293b;       
-    --text-main: #cbd5e1;     
+    --bg-card: #1e293b;
+    --text-main: #cbd5e1;
+    --text-light: #94a3b8;     
     --border: #334155;        
 }
 
@@ -25,9 +27,15 @@ body {
     font-family: 'Inter', sans-serif; 
     background: var(--bg-body); 
     color: var(--text-main); 
-    margin: 0; 
+    margin: 0;
     padding: 0; 
-    transition: background-color 0.3s, color 0.3s; /* Transición suave */
+    transition: background-color 0.3s, color 0.3s;
+    
+    /* --- CAMBIO CRÍTICO: MODO "APP" ESTÁTICO --- */
+    height: 100vh;       /* Fuerza la altura al tamaño de la ventana */
+    overflow: hidden;    /* ELIMINA LA BARRA DE SCROLL DEL NAVEGADOR */
+    display: flex;       /* Layout flexible vertical */
+    flex-direction: column;
 }
 
 /* LOGIN */
@@ -44,28 +52,47 @@ body {
 .btn-danger:hover { opacity: 0.9; }
 .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; }
 
-/* NUEVO: BOTÓN TOGGLE THEME */
-.theme-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-main);
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    width: 36px;
-    height: 36px;
-}
+/* THEME BTN */
+.theme-btn { background: transparent; border: 1px solid var(--border); color: var(--text-main); cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; width: 36px; height: 36px; }
 .theme-btn:hover { background: var(--border); }
 .theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
-/* DASHBOARD */
-.admin-nav { background: var(--bg-card); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+/* DASHBOARD NAV */
+.admin-nav { 
+    background: var(--bg-card); 
+    padding: 1rem 2rem; 
+    border-bottom: 1px solid var(--border); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    flex-shrink: 0; /* Evita que el menú se aplaste */
+}
 .brand { font-weight: 700; font-size: 1.2rem; color: var(--primary); }
-.container { max-width: 1000px; margin: 2rem auto; padding: 0 20px; display: none; }
+
+/* CONTENEDOR PRINCIPAL (CON SCROLL INTERNO SUTIL SI ES NECESARIO) */
+.container { 
+    max-width: 1100px; 
+    width: 100%;
+    margin: 0 auto; 
+    padding: 20px; 
+    display: none; 
+    
+    /* Manejo del espacio */
+    flex: 1; /* Ocupa todo el espacio sobrante */
+    overflow-y: auto; /* Scroll SOLO si el contenido no cabe en la pantalla */
+    
+    /* Ocultar Scrollbar visualmente pero mantener funcionalidad */
+    scrollbar-width: thin; 
+    scrollbar-color: var(--border) transparent;
+}
+
+/* Scrollbar Webkit (Chrome/Edge) Estilizado Sutil */
+.container::-webkit-scrollbar { width: 6px; }
+.container::-webkit-scrollbar-track { background: transparent; }
+.container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 20px; }
+body.dark-mode .container::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); }
+
+
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
 .card { background: var(--bg-card); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px;}
 .card h3 { margin-top: 0; color: var(--text-main); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; }
@@ -79,115 +106,120 @@ body {
 .status-open { background: #dcfce7; color: #166534; }
 .status-closed { background: #fee2e2; color: #991b1b; }
 
-/* TABLAS */
-.admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-.admin-table th { text-align: left; padding: 12px 10px; border-bottom: 2px solid var(--border); color: var(--text-main); font-size: 0.85rem; background: var(--bg-body); }
-.admin-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; color: var(--text-main); }
+/* TABLAS GENERALES */
+.admin-table { width: 100%; border-collapse: collapse; margin-top: 0; }
+.admin-table th { text-align: left; padding: 12px 15px; border-bottom: 2px solid var(--border); color: var(--text-main); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: var(--bg-body); }
+.admin-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; color: var(--text-main); }
 
-/* SELECT DE ESTADO */
-.status-select {
-    padding: 6px 10px;
-    border-radius: 20px;
-    border: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-    text-align: center;
-    width: 100%;
-    min-width: 120px;
-}
+/* SELECTS */
+.status-select { padding: 6px 10px; border-radius: 20px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none; text-align: center; width: 100%; min-width: 120px; }
 .status-pendiente { background-color: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
 .status-completado { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
 .status-cancelado { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-/* SWEETALERT CUSTOM ADMIN */
-div:where(.swal2-container) div:where(.swal2-popup) { 
-    background: var(--bg-card) !important; 
-    color: var(--text-main) !important;
-}
+/* SWEETALERT */
+div:where(.swal2-container) div:where(.swal2-popup) { background: var(--bg-card) !important; color: var(--text-main) !important; }
 div:where(.swal2-title) { color: var(--primary) !important; }
 
-@media (max-width: 600px) {
-    .orders-table th:nth-child(2), 
-    .orders-table td:nth-child(2) { display: none; } 
-}
+/* TABS */
+.admin-tabs { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 0; overflow-x: auto; }
+.tab-btn { background: transparent; border: none; padding: 12px 20px; font-size: 0.95rem; font-weight: 600; color: var(--text-main); opacity: 0.6; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif; white-space: nowrap; }
+.tab-btn:hover { opacity: 1; color: var(--primary); }
+.tab-btn.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+.tab-content.active { display: block; }
 
-/* --- ESTILOS DE PESTAÑAS (TABS) PARA ADMIN --- */
-.admin-tabs {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 25px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 0;
-    overflow-x: auto; /* Para que en móviles se pueda deslizar si falta espacio */
-}
+/* GRAPHICS */
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+.chart-card { min-height: 300px; }
+.chart-container { position: relative; height: 250px; width: 100%; }
 
-.tab-btn {
-    background: transparent;
-    border: none;
-    padding: 12px 20px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-main);
-    opacity: 0.6;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Inter', sans-serif;
-    white-space: nowrap;
-}
+/* =========================================
+   ESTILOS PROFESIONALES DE TABLA DE PEDIDOS
+   ========================================= */
 
-.tab-btn:hover {
-    opacity: 1;
-    color: var(--primary);
-}
-
-.tab-btn.active {
-    opacity: 1;
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-}
-
-/* CONTENIDO DE LAS PESTAÑAS */
-.tab-content {
-    display: none;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* --- ESTILOS PARA GRÁFICOS --- */
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.chart-card {
-    min-height: 300px;
-}
-
-.chart-container {
+/* 1. Contenedor de Scroll TABLA (Dentro de la Card) */
+.table-container {
+    max-height: 600px; 
+    overflow-y: auto;  
+    overflow-x: hidden;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
     position: relative;
-    height: 250px;
-    width: 100%;
 }
 
-/* Ajustes para Tabs en móvil */
-.admin-tabs {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+/* 2. Configuración de la Tabla */
+.orders-table {
+    width: 100%;
+    table-layout: fixed; 
+    border-collapse: separate; 
+    border-spacing: 0;
 }
-.tab-btn {
-    white-space: nowrap;
+
+/* 3. Header Sticky */
+.orders-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--bg-card);
+    box-shadow: 0 1px 0px var(--border); 
+    color: var(--text-light);
+    font-size: 0.75rem;
+}
+
+/* 4. Definición de Anchos de Columna */
+.col-fecha   { width: 15%; }
+.col-usuario { width: 25%; }
+.col-juego   { width: 25%; }
+.col-precio  { width: 10%; text-align: center; }
+.col-estado  { width: 15%; text-align: center; }
+.col-accion  { width: 10%; text-align: center; }
+
+/* 5. Celdas de Datos */
+.orders-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 10px;
+    vertical-align: middle;
+    height: 70px;
+}
+
+/* 6. Estilos de Texto */
+.cell-content { display: flex; flex-direction: column; justify-content: center; }
+.text-primary {
+    font-weight: 600; color: var(--primary); font-size: 0.9rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.text-secondary {
+    font-size: 0.8rem; color: var(--text-light);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin-top: 2px;
+}
+
+/* 7. Columna de Acción */
+.action-cell-content {
+    display: flex; align-items: center; justify-content: center; gap: 8px; height: 100%;
+}
+
+/* Botón Ver Foto */
+.btn-foto {
+    background: transparent; border: 1px solid var(--border); color: var(--text-light); font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; margin: 4px auto 0; display: block; width: fit-content; cursor: pointer; transition: all 0.2s;
+}
+.btn-foto:hover { background: var(--bg-body); color: var(--primary); border-color: var(--text-light); }
+
+/* Scrollbar de la TABLA */
+.table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.table-container::-webkit-scrollbar-track { background: var(--bg-body); border-radius: 0 8px 8px 0; }
+.table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Responsive Móvil */
+@media (max-width: 768px) {
+    .col-usuario { display: none; }
+    .col-fecha { width: 20%; }
+    .col-juego { width: 35%; }
+    .col-precio { width: 15%; }
+    .col-estado { width: 15%; }
+    .col-accion { width: 15%; }
 }
 
 @keyframes fadeIn {
