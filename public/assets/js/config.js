@@ -16,12 +16,34 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Exportamos las herramientas
+// Exportamos las herramientas de Firebase
 export const db = getDatabase(app);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 
-// --- 2. LÓGICA MODO OSCURO ---
+// --- 2. CONFIGURACIÓN EMAILJS CENTRALIZADA ---
+export const EMAIL_CONFIG = {
+    // Clave pública (Public Key)
+    PUBLIC_KEY: "Va7OrfLoqfzMU7yPM", 
+    
+    // ID del Servicio
+    SERVICE_ID: "service_7gak5za",
+    
+    // IDs de las Plantillas
+    TEMPLATE_ORDER: "template_3z533nm",   // Para pedidos (storeLogic.js)
+    TEMPLATE_SURVEY: "template_06xzsnn"   // Para encuestas (admin.js)
+};
+
+export function initEmailService() {
+    if (typeof emailjs !== 'undefined') {
+        emailjs.init(EMAIL_CONFIG.PUBLIC_KEY);
+        console.log("📧 EmailJS inicializado desde config.js");
+    } else {
+        console.error("⚠️ La librería EmailJS no se ha cargado en el HTML. Asegúrate de incluir el script.");
+    }
+}
+
+// --- 3. LÓGICA MODO OSCURO ---
 export function initTheme() {
     const btnTheme = document.getElementById('theme-toggle');
     const body = document.body;
@@ -40,7 +62,6 @@ export function initTheme() {
     if(btnTheme) {
         const newBtn = btnTheme.cloneNode(true);
         btnTheme.parentNode.replaceChild(newBtn, btnTheme);
-
         newBtn.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
             if (body.classList.contains('dark-mode')) {
@@ -54,11 +75,10 @@ export function initTheme() {
     }
 }
 
-// --- 3. LÓGICA DE ZOOM DE IMÁGENES (RESPONSIVE + TAMAÑO UNIFICADO) ---
+// --- 4. LÓGICA DE ZOOM DE IMÁGENES (RESPONSIVE) ---
 export function initImageZoom() {
     const activarZoom = () => {
         const stepImages = document.querySelectorAll('.step-image-container img');
-        
         if(stepImages.length === 0) return;
 
         stepImages.forEach(img => {
@@ -67,7 +87,6 @@ export function initImageZoom() {
             const container = img.closest('.step-image-container');
             
             if (container) {
-                // Cursor lupa solo en PC
                 if (window.innerWidth > 768) {
                     container.style.cursor = "zoom-in"; 
                 } else {
@@ -75,7 +94,6 @@ export function initImageZoom() {
                 }
 
                 container.addEventListener('click', (e) => {
-                    // Bloquear en móvil
                     if (window.innerWidth <= 768) return; 
 
                     e.preventDefault(); 
@@ -94,7 +112,7 @@ export function initImageZoom() {
                         didOpen: () => {
                             const swalImg = Swal.getImage();
                             if(swalImg) {
-                                swalImg.style.width = '45vw';  
+                                swalImg.style.width = '45vw';
                                 swalImg.style.height = '60vh'; 
                                 swalImg.style.objectFit = 'contain'; 
                                 swalImg.style.backgroundColor = 'transparent'; 
@@ -117,7 +135,7 @@ export function initImageZoom() {
     }
 }
 
-// --- 4. FUNCIONES UTILITARIAS COMPARTIDAS ---
+// --- 5. FUNCIONES UTILITARIAS COMPARTIDAS ---
 
 // A. Validar RUT
 export function validarRut(cuerpo, dv) {
@@ -176,6 +194,7 @@ export function comprimirImagen(file) {
                 const scaleSize = maxWidth / img.width;
                 canvas.width = maxWidth;
                 canvas.height = img.height * scaleSize;
+                
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 

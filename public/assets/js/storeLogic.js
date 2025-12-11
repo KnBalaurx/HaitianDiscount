@@ -1,18 +1,19 @@
 /* ARCHIVO: assets/js/storeLogic.js */
 import { ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { db, auth, initTheme, initImageZoom, comprimirImagen, configurarValidacionRut } from './config.js';
+// IMPORTAMOS LA NUEVA CONFIGURACIÓN DE EMAILJS
+import { db, auth, initTheme, initImageZoom, comprimirImagen, configurarValidacionRut, EMAIL_CONFIG, initEmailService } from './config.js';
 
-// Inicializamos cosas visuales globales
+// Inicializamos cosas visuales globales y el servicio de Email
 initTheme();
 initImageZoom();
+initEmailService(); 
 
 /* --- FUNCIÓN AUXILIAR: CONFETI --- */
 function lanzarConfeti() {
     if (!window.confetti) return;
     var end = Date.now() + (2 * 1000);
     var colors = ['#2563eb', '#a855f7', '#ffffff'];
-
     (function frame() {
         confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
         confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
@@ -23,18 +24,19 @@ function lanzarConfeti() {
 /* --- LÓGICA PRINCIPAL DE LA TIENDA --- */
 export function initStorePage(config) {
     const { platformName, budgetRefString, statusRefString } = config;
-
     const saldoRef = ref(db, budgetRefString);
     const estadoRef = ref(db, statusRefString);
-    const SERVICE_ID = 'service_7gak5za';    //SERVICE ID EMAILJS
-    const TEMPLATE_ID = 'template_3z533nm';  //TEMPLATE ID EMAILJS
+    
+    // USAMOS LAS VARIABLES CENTRALIZADAS
+    const SERVICE_ID = EMAIL_CONFIG.SERVICE_ID;
+    const TEMPLATE_ID = EMAIL_CONFIG.TEMPLATE_ORDER;
 
-    let presupuestoActual = 0; 
+    let presupuestoActual = 0;
     const displayTope = document.getElementById('tope-dinero');
     const inputPrecioFinal = document.getElementById('precioFinalInput');
     const form = document.getElementById('gameForm');
     const btnEnviar = document.getElementById('btnEnviar');
-    const btnCalc = document.querySelector('.btn-calc'); 
+    const btnCalc = document.querySelector('.btn-calc');
     const inputComprobante = document.getElementById('comprobanteInput');
     const inputRut = document.getElementById('rut');
     const inputPrecio = document.getElementById('precioSteam');
@@ -42,7 +44,7 @@ export function initStorePage(config) {
     let rutEsValido = false;
 
     // --- INICIALIZAR EL WIZARD (NUEVO) ---
-    initWizard(); 
+    initWizard();
 
     // --- LISTENERS BÁSICOS ---
     if(btnCalc) { btnCalc.addEventListener('click', calcularDescuento); }
@@ -108,6 +110,7 @@ export function initStorePage(config) {
     // --- CÁLCULO ---
     function calcularDescuento() {
         if (!tiendaAbierta) return;
+
         const precioVal = inputPrecio.value;
         const codigoInput = document.getElementById('codigoInvitado').value.trim().toUpperCase(); 
         const inputCodigoElem = document.getElementById('codigoInvitado'); 
@@ -118,7 +121,7 @@ export function initStorePage(config) {
             return;
         }
         const precio = parseFloat(precioVal);
-        const DESCUENTO_BASE = 0.30; 
+        const DESCUENTO_BASE = 0.30;
 
         if (codigoInput === "") {
             const precioFinal = Math.round(precio * (1 - DESCUENTO_BASE));
@@ -198,7 +201,7 @@ export function initStorePage(config) {
 
             Swal.fire({ title: 'Procesando Pedido', html: 'Iniciando sistema...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const updateStatus = (texto) => { if(Swal.getHtmlContainer()) Swal.getHtmlContainer().textContent = texto; };
-
+            
             try {
                 updateStatus('1/4 Optimizando imagen...');
                 const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
@@ -236,6 +239,7 @@ export function initStorePage(config) {
                             form.reset();
                             rutEsValido = false; 
                             if(inputRut) { inputRut.style.borderColor = "var(--border)"; inputRut.style.boxShadow = "none"; }
+                           
                             const previewContainer = document.getElementById('previewContainer');
                             if(previewContainer) previewContainer.style.display = 'none';
                             const previewComp = document.getElementById('previewComprobanteContainer');
@@ -260,7 +264,6 @@ export function initStorePage(config) {
 /* --- LÓGICA DEL WIZARD (REUTILIZABLE) --- */
 function initWizard() {
     let currentStep = 1;
-
     // Se asignan funciones al objeto window para poder usarlas en el HTML (onclick="window.nextStep(2)")
     window.showStep = (stepNumber) => {
         document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));

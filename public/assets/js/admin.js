@@ -1,25 +1,12 @@
 /* ARCHIVO: assets/js/admin.js */
 import { ref, onValue, set, update, remove, child, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { db, auth, provider, initTheme } from './config.js';
+// IMPORTAMOS LA CONFIGURACIÓN CENTRALIZADA
+import { db, auth, provider, initTheme, EMAIL_CONFIG, initEmailService } from './config.js';
 
 initTheme();
-
-// --- CONFIGURACIÓN DE EMAILJS ---
-const EMAILJS_SERVICE_ID = 'service_7gak5za'; 
-const EMAILJS_TEMPLATE_ID = 'template_06xzsnn'; 
-const EMAILJS_PUBLIC_KEY = 'Va7OrfLoqfzMU7yPM'; 
-
-// 🛑 INICIALIZACIÓN DIFERIDA
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof emailjs !== 'undefined') {
-        emailjs.init(EMAILJS_PUBLIC_KEY)
-            .then(() => console.log("EmailJS inicializado con éxito."))
-            .catch((error) => console.error("Error EmailJS:", error));
-    } else {
-        console.error("EmailJS SDK no cargado.");
-    }
-});
+// INICIALIZAR EMAILJS
+initEmailService();
 
 // DOM Elements
 const loginOverlay = document.getElementById('login-overlay');
@@ -93,17 +80,12 @@ async function sendSurveyEmail(orderId, customerEmail, gameTitle) {
     }
 
     // 1. DETECCIÓN AUTOMÁTICA DE DOMINIO
-    // Si estás en localhost, usa ruta local. Si estás en web, usa tu dominio de Firebase.
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    
-    // ⚠️ REVISA: Si tu dominio de Firebase no es este, cámbialo abajo.
-    const productionHost = "https://haitiandiscount.web.app"; 
-    
-    // Ajuste de ruta: Local suele necesitar /public/pages, prod solo /pages
+    const productionHost = "https://haitiandiscount.web.app";
     const baseUrl = isLocal 
-        ? `http://${window.location.host}/public/pages/encuesta.html` // Ruta típica VS Code Live Server
+        ? `http://${window.location.host}/public/pages/encuesta.html` 
         : `${productionHost}/pages/encuesta.html`;
-
+        
     console.log("Generando links de encuesta para:", baseUrl);
 
     // 2. CONSTRUCCIÓN DE PARÁMETROS PARA LA PLANTILLA
@@ -120,7 +102,13 @@ async function sendSurveyEmail(orderId, customerEmail, gameTitle) {
     };
 
     try {
-        const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+        // USAMOS CONFIG CENTRALIZADA
+        const response = await emailjs.send(
+            EMAIL_CONFIG.SERVICE_ID, 
+            EMAIL_CONFIG.TEMPLATE_SURVEY, 
+            templateParams
+        );
+
         if (response.status === 200) {
             Swal.fire('¡Enviado!', `Correo de finalización enviado a ${customerEmail}.`, 'success');
             return true;
@@ -167,7 +155,6 @@ function iniciarListeners() {
         document.getElementById('statusEnebaDisplay').innerHTML = estEneba === 'abierto' ? '<span class="status-badge status-open">ABIERTA ONLINE</span>' : '<span class="status-badge status-closed">CERRADA</span>';
     });
     document.getElementById('btnToggleEneba').addEventListener('click', () => set(estadoEnebaRef, estEneba === 'abierto' ? 'cerrado' : 'abierto'));
-
     // --- VIP ---
     const vipRef = ref(db, 'codigos_vip');
     onValue(vipRef, (snap) => {
@@ -195,7 +182,7 @@ function iniciarListeners() {
 
     // --- PEDIDOS (TABLA Y GRÁFICOS) ---
     const ordenesRef = ref(db, 'ordenes');
-    let todasLasOrdenes = []; 
+    let todasLasOrdenes = [];
     const searchInput = document.getElementById('searchInput');
     const filterStatus = document.getElementById('filterStatus');
 
@@ -205,7 +192,7 @@ function iniciarListeners() {
 
         if (data) {
             todasLasOrdenes = Object.entries(data).map(([id, info]) => ({ id, ...info }))
-                                             .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                                     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         }
         
         renderizarTabla();
@@ -226,14 +213,12 @@ function iniciarListeners() {
             const cumpleBusqueda = email.includes(textoBusqueda) || rut.includes(textoBusqueda) || juego.includes(textoBusqueda);
             return cumpleEstado && cumpleBusqueda;
         });
-
         if (ordenesFiltradas.length === 0) {
             ordersList.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No se encontraron pedidos.</td></tr>';
             return;
         }
 
-        window.imagenesComprobantes = {}; 
-
+        window.imagenesComprobantes = {};
         ordenesFiltradas.forEach(orden => {
             const fecha = new Date(orden.fecha).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
             const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(orden.precio_pagado);
@@ -280,7 +265,6 @@ function iniciarListeners() {
         const ordenesCompletadas = todasLasOrdenes.filter(o => o.estado === 'completado');
         const pendientes = todasLasOrdenes.filter(o => o.estado === 'pendiente');
         const totalVentas = ordenesCompletadas.reduce((acc, curr) => acc + (parseInt(curr.precio_pagado) || 0), 0);
-        
         document.getElementById('kpiTotalVentas').innerText = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalVentas);
         document.getElementById('kpiTotalPedidos').innerText = ordenesCompletadas.length;
         document.getElementById('kpiPendientes').innerText = pendientes.length;
@@ -288,14 +272,12 @@ function iniciarListeners() {
 
     function actualizarGraficos() {
         const ordenesCompletadas = todasLasOrdenes.filter(o => o.estado === 'completado');
-
         // 1. Gráfico Ventas Semanales
         const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const ventasPorDia = Array(7).fill(0);
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0); 
         const etiquetasDias = [];
-
         for (let i = 6; i >= 0; i--) {
             const d = new Date(hoy);
             d.setDate(d.getDate() - i);
@@ -313,7 +295,6 @@ function iniciarListeners() {
                 ventasPorDia[index] += parseInt(orden.precio_pagado) || 0;
             }
         });
-
         const ctxSales = document.getElementById('salesChart');
         if(ctxSales) {
             if (salesChartInstance) salesChartInstance.destroy();
@@ -345,7 +326,6 @@ function iniciarListeners() {
             if (plat.includes('steam')) steamCount++;
             else if (plat.includes('eneba')) enebaCount++;
         });
-
         const ctxPlatform = document.getElementById('platformChart');
         if(ctxPlatform) {
             if (platformChartInstance) platformChartInstance.destroy();
@@ -375,15 +355,13 @@ function iniciarListeners() {
     window.cambiarEstado = async (id, nuevoEstado) => {
         const ordenRef = ref(db, `ordenes/${id}`);
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-        
         try {
             const snapshot = await get(ordenRef);
             if (!snapshot.exists()) return;
             const orden = snapshot.val();
             const costoOriginal = orden.precio_steam; 
             const plataforma = orden.plataforma;
-            const estadoOriginal = orden.estado; 
-
+            const estadoOriginal = orden.estado;
             // --- LÓGICA DE REEMBOLSO ---
             if (nuevoEstado === 'cancelado' && estadoOriginal !== 'cancelado') {
                 let presupuestoRefStr = plataforma === 'Steam' ? 'presupuesto_steam' : 'presupuesto_eneba';
@@ -405,13 +383,10 @@ function iniciarListeners() {
                     cancelButtonText: 'Cancelar',
                     confirmButtonColor: '#10b981'
                 });
-                
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Enviando correo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    
                     // Intentar enviar el correo
                     const emailSent = await sendSurveyEmail(id, orden.email, orden.juego);
-                    
                     if (emailSent) {
                         // Si se envió bien, actualizar DB
                         await update(ordenRef, { 
@@ -444,7 +419,6 @@ function iniciarListeners() {
             Toast.fire({ icon: 'error', title: 'Error interno' });
         }
     };
-
     window.borrarOrden = (id) => {
         Swal.fire({ title: '¿Borrar?', text: "Se perderá el registro.", icon: 'warning', showCancelButton: true }).then((r) => { if (r.isConfirmed) remove(child(ordenesRef, id)); });
     };
