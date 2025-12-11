@@ -24,6 +24,7 @@ Directory structure:
     │   │       └── storeLogic.js
     │   └── pages/
     │       ├── admin.html
+    │       ├── encuesta.html
     │       └── perfil.html
     └── .github/
         └── workflows/
