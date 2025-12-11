@@ -1,19 +1,19 @@
-/* ARCHIVO: assets/js/storeLogic.js */
+/* ARCHIVO: public/assets/js/storeLogic.js */
 import { ref, onValue, runTransaction, get, child, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-// IMPORTAMOS LA NUEVA CONFIGURACIÓN DE EMAILJS
 import { db, auth, initTheme, initImageZoom, comprimirImagen, configurarValidacionRut, EMAIL_CONFIG, initEmailService } from './config.js';
 
 // Inicializamos cosas visuales globales y el servicio de Email
 initTheme();
 initImageZoom();
-initEmailService(); 
+initEmailService();
 
 /* --- FUNCIÓN AUXILIAR: CONFETI --- */
 function lanzarConfeti() {
     if (!window.confetti) return;
     var end = Date.now() + (2 * 1000);
     var colors = ['#2563eb', '#a855f7', '#ffffff'];
+
     (function frame() {
         confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
         confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
@@ -21,13 +21,29 @@ function lanzarConfeti() {
     }());
 }
 
+/* --- PORTAPAPELES INTELIGENTE --- */
+window.copiarDato = (texto, btnElement) => {
+    navigator.clipboard.writeText(texto).then(() => {
+        const originalHTML = btnElement.innerHTML;
+        btnElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copiado`;
+        btnElement.classList.add('copied');
+        if (navigator.vibrate) navigator.vibrate(50);
+        setTimeout(() => {
+            btnElement.innerHTML = originalHTML;
+            btnElement.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+        Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: 'Error al copiar', showConfirmButton: false, timer: 2000 });
+    });
+};
+
 /* --- LÓGICA PRINCIPAL DE LA TIENDA --- */
 export function initStorePage(config) {
     const { platformName, budgetRefString, statusRefString } = config;
+
     const saldoRef = ref(db, budgetRefString);
     const estadoRef = ref(db, statusRefString);
-    
-    // USAMOS LAS VARIABLES CENTRALIZADAS
     const SERVICE_ID = EMAIL_CONFIG.SERVICE_ID;
     const TEMPLATE_ID = EMAIL_CONFIG.TEMPLATE_ORDER;
 
@@ -43,7 +59,7 @@ export function initStorePage(config) {
 
     let rutEsValido = false;
 
-    // --- INICIALIZAR EL WIZARD (NUEVO) ---
+    // --- INICIALIZAR EL WIZARD ---
     initWizard();
 
     // --- LISTENERS BÁSICOS ---
@@ -51,10 +67,28 @@ export function initStorePage(config) {
     if(inputRut) { 
         configurarValidacionRut(inputRut, (estado) => { rutEsValido = estado; });
     }
+
+    // --- NUEVO: FORMATEO DE MONEDA EN TIEMPO REAL ---
     if(inputPrecio) {
-        inputPrecio.addEventListener('input', function() {
-            if (this.value.startsWith('0') && this.value.length > 1) this.value = this.value.substring(1);
-            if (this.value < 0) this.value = Math.abs(this.value);
+        inputPrecio.addEventListener('input', function(e) {
+            // 1. Eliminar cualquier caracter que no sea número
+            let valorLimpio = this.value.replace(/\D/g, '');
+
+            // 2. Si está vacío, limpiar y salir
+            if (valorLimpio === '') {
+                this.value = '';
+                return;
+            }
+
+            // 3. Convertir a número entero
+            const numero = parseInt(valorLimpio, 10);
+
+            // 4. Formatear con separadores de miles (CLP)
+            // Usamos 'es-CL' para que use puntos como separador
+            const valorFormateado = new Intl.NumberFormat('es-CL').format(numero);
+
+            // 5. Asignar de nuevo al input con el signo $
+            this.value = '$' + valorFormateado;
         });
     }
 
@@ -107,20 +141,23 @@ export function initStorePage(config) {
         }
     });
 
-    // --- CÁLCULO ---
+    // --- CÁLCULO (ACTUALIZADO PARA LEER FORMATO MONEDA) ---
     function calcularDescuento() {
         if (!tiendaAbierta) return;
-
-        const precioVal = inputPrecio.value;
+        
+        // 1. OBTENER VALOR LIMPIO (Quitar $ y puntos)
+        const valorRaw = inputPrecio.value.replace(/\D/g, ''); 
+        
         const codigoInput = document.getElementById('codigoInvitado').value.trim().toUpperCase(); 
         const inputCodigoElem = document.getElementById('codigoInvitado'); 
         inputCodigoElem.classList.remove('vip-active');
 
-        if (!precioVal || precioVal <= 0) {
+        if (!valorRaw || parseInt(valorRaw) <= 0) {
             Swal.fire('Faltan datos', `Ingresa el precio de ${platformName}.`, 'warning');
             return;
         }
-        const precio = parseFloat(precioVal);
+
+        const precio = parseInt(valorRaw, 10); // Usamos el valor limpio
         const DESCUENTO_BASE = 0.30;
 
         if (codigoInput === "") {
@@ -130,6 +167,7 @@ export function initStorePage(config) {
         }
 
         Swal.fire({ title: 'Verificando...', didOpen: () => Swal.showLoading() });
+
         get(child(ref(db), `codigos_vip/${codigoInput}`)).then((snapshot) => {
             Swal.close();
             let descuento = DESCUENTO_BASE;
@@ -201,7 +239,7 @@ export function initStorePage(config) {
 
             Swal.fire({ title: 'Procesando Pedido', html: 'Iniciando sistema...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const updateStatus = (texto) => { if(Swal.getHtmlContainer()) Swal.getHtmlContainer().textContent = texto; };
-            
+
             try {
                 updateStatus('1/4 Optimizando imagen...');
                 const comprobanteBase64 = await comprimirImagen(inputComprobante.files[0]);
@@ -239,7 +277,7 @@ export function initStorePage(config) {
                             form.reset();
                             rutEsValido = false; 
                             if(inputRut) { inputRut.style.borderColor = "var(--border)"; inputRut.style.boxShadow = "none"; }
-                           
+                            
                             const previewContainer = document.getElementById('previewContainer');
                             if(previewContainer) previewContainer.style.display = 'none';
                             const previewComp = document.getElementById('previewComprobanteContainer');
@@ -247,7 +285,7 @@ export function initStorePage(config) {
                             document.getElementById('resultado').style.display = 'none';
                             
                             // Resetear Wizard
-                            window.showStep(1); 
+                            window.showStep(1);
                         });
                     } else {
                         Swal.fire('Lo sentimos', `Cupo de ${platformName} agotado en este instante.`, 'error');
@@ -264,7 +302,6 @@ export function initStorePage(config) {
 /* --- LÓGICA DEL WIZARD (REUTILIZABLE) --- */
 function initWizard() {
     let currentStep = 1;
-    // Se asignan funciones al objeto window para poder usarlas en el HTML (onclick="window.nextStep(2)")
     window.showStep = (stepNumber) => {
         document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.step-indicator').forEach(el => el.classList.remove('active'));
@@ -278,7 +315,6 @@ function initWizard() {
         }
         currentStep = stepNumber;
     };
-
     window.nextStep = (targetStep) => {
         // Validaciones Paso 1
         if (currentStep === 1 && targetStep === 2) {
@@ -306,11 +342,9 @@ function initWizard() {
         }
         window.showStep(targetStep);
     };
-
     window.prevStep = (targetStep) => {
         window.showStep(targetStep);
     };
-
     // Preview de Comprobante (Paso 3)
     const fileInput = document.getElementById('comprobanteInput');
     if(fileInput) {
@@ -339,38 +373,3 @@ function initWizard() {
         });
     }
 }
-
-/* --- PORTAPAPELES INTELIGENTE --- */
-window.copiarDato = (texto, btnElement) => {
-    // 1. Usar API del portapapeles
-    navigator.clipboard.writeText(texto).then(() => {
-        
-        // 2. Feedback Visual (Cambiar icono y color)
-        const originalHTML = btnElement.innerHTML;
-        btnElement.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            Copiado
-        `;
-        btnElement.classList.add('copied');
-
-        // 3. Vibración en móviles (Haptic feedback)
-        if (navigator.vibrate) navigator.vibrate(50);
-
-        // 4. Restaurar botón después de 2 segundos
-        setTimeout(() => {
-            btnElement.innerHTML = originalHTML;
-            btnElement.classList.remove('copied');
-        }, 2000);
-
-    }).catch(err => {
-        console.error('Error al copiar:', err);
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'error',
-            title: 'No se pudo copiar automáticamente',
-            showConfirmButton: false,
-            timer: 2000
-        });
-    });
-};
