@@ -64,6 +64,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
                 Pedidos
             </button>
+            <button class="tab-btn" data-target="tab-usuarios">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                Usuarios
+            </button>
         </div>
 
         <div id="tab-stats" class="tab-content active">
@@ -184,6 +188,42 @@
                         </thead>
                         <tbody id="ordersList">
                             <tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-usuarios" class="tab-content">
+            <div class="section-header" style="text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-size: 0.9rem;">
+                Gestión de Usuarios Registrados
+            </div>
+
+            <div class="card">
+                <h3>Listado y Control de Cuentas</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <input type="text" id="userSearchInput" class="input-admin" placeholder="Buscar por Email o ID de Usuario...">
+                    <select id="userFilterStatus" class="input-admin" style="max-width: 150px;">
+                        <option value="todos">Todos</option>
+                        <option value="activo">✅ Activos</option>
+                        <option value="pausado">⏸️ Pausados</option>
+                        <option value="baneado">❌ Baneados</option>
+                    </select>
+                </div>
+                
+                <div class="table-container">
+                    <table class="admin-table users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email / RUT</th>
+                                <th>Wichslist</th>
+                                <th>Estado Actual</th>
+                                <th>Acción Rápida</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersList">
+                            <tr><td colspan="5" style="text-align:center;">Cargando usuarios...</td></tr>
                         </tbody>
                     </table>
                 </div>

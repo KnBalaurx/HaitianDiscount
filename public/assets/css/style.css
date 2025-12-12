@@ -749,3 +749,82 @@ body.dark-mode input:focus {
     color: #166534;
     border-color: #166534;
 }
+
+/* --- NUEVA SECCIÓN: FEEDBACK/TESTIMONIALS --- */
+
+/* Sección de Testimonios/Feedback */
+.testimonials-section {
+    padding: 60px 0;
+    /* Ajusta el fondo si lo deseas */
+}
+
+.feedback-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.feedback-card {
+    /* Reutiliza los estilos de tarjeta con el efecto de glass */
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05); 
+    
+    padding: 25px;
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+}
+
+.feedback-card:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 20px 40px -5px rgba(37, 99, 235, 0.15); 
+    border-color: var(--accent);
+}
+
+body.dark-mode .feedback-card {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); 
+    border: 1px solid rgba(255, 255, 255, 0.05); 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.rating {
+    color: var(--vip-gold); /* Usamos el color dorado para las estrellas */
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.feedback-text {
+    font-style: italic;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    flex-grow: 1; 
+    line-height: 1.5;
+}
+
+.client-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 0.9em;
+}
+
+.client-name {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.client-date {
+    color: var(--text-light);
+}
+
+@media (max-width: 768px) {
+    .feedback-grid {
+        gap: 20px;
+        grid-template-columns: 1fr;
+    }
+}

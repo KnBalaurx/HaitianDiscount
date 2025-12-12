@@ -457,6 +457,205 @@ function iniciarListeners() {
     };
 }
 
+// --- LÓGICA DE GESTIÓN DE USUARIOS (UNIFICADA Y MEJORADA) ---
+    
+    // 1. FUNCIÓN DE UTILIDAD: Para obtener la etiqueta de estado
+    function getStatusTag(status) {
+        status = (status || 'activo').toLowerCase();
+        switch (status) {
+            case 'pausado':
+                return '<span class="status-tag paused">⏸️ Pausado</span>';
+            case 'baneado':
+                return '<span class="status-tag banned">❌ Baneado</span>';
+            case 'activo':
+            default:
+                return '<span class="status-tag active">✅ Activo</span>';
+        }
+    }
+
+    // 2. FUNCIÓN DE UTILIDAD: Para restablecer el SELECT a "Seleccionar Acción"
+    function resetUserSelect(userId) {
+        const selectElement = document.querySelector(`.status-select[data-user-id="${userId}"]`);
+        if (selectElement) {
+            selectElement.value = "";
+        }
+    }
+    
+    // 3. FUNCIÓN PRINCIPAL DE CARGA DE USUARIOS
+    window.loadUsers = function() {
+        const usersList = document.getElementById('usersList');
+        usersList.innerHTML = '<tr><td colspan="5" style="text-align:center;">Cargando usuarios de Firebase...</td></tr>';
+        
+        const dbRef = ref(db);
+        get(child(dbRef, 'usuarios')).then((snapshot) => {
+            if (snapshot.exists()) {
+                const users = snapshot.val();
+                let userHtml = '';
+
+                // Recorrer los usuarios obtenidos de Firebase
+                for (const userId in users) {
+                    try {
+                        const user = users[userId];
+                        const statusText = user.status || 'activo'; 
+                        const toggleOptionText = statusText === 'pausado' ? '▶️ Reactivar' : '⏸️ Pausar';
+                        
+                        // LÓGICA WISHLIST: Cuenta cuántas claves hay en el nodo 'wishlist'.
+                        const wishlistCount = user.wishlist ? Object.keys(user.wishlist).length : 0;
+                        
+                        // Generación del SELECT mejorado
+                        const selectHtml = `
+                            <select class="input-admin status-select action-select" data-user-id="${userId}" onchange="handleUserAction(this.value, '${userId}', '${statusText}')" style="font-weight: 500;">
+                                <option value="" selected disabled>⚙️ Acción...</option>
+                                <option value="toggle_status">${toggleOptionText}</option>
+                                <option value="banear">❌ Banear</option>
+                                <option value="eliminar" style="color: #dc3545;">🗑️ Eliminar</option>
+                            </select>
+                        `;
+
+                        userHtml += `
+                            <tr>
+                                <td>
+                                    <div style="font-size: 0.75rem; word-break: break-all;">
+                                        ${userId}
+                                    </div>
+                                </td>
+                                
+                                <td>
+                                    <div>
+                                        <div style="font-weight: bold;">${user.nombre || 'N/D'}</div>
+                                        <div style="font-size: 0.85rem; color: #a0a0a0;">RUT: ${user.rut || 'N/D'}</div>
+                                    </div>
+                                </td>
+                                
+                                <td style="font-weight: bold; color: var(--accent);">${wishlistCount} items</td>
+                                
+                                <td>${getStatusTag(statusText)}</td>
+                                <td>
+                                    ${selectHtml}
+                                </td>
+                            </tr>
+                        `;
+                    } catch (e) {
+                        console.error(`ERROR al procesar usuario ${userId}:`, e);
+                        userHtml += `<tr><td colspan="5" style="color:red; font-size: 0.8rem;">Error al cargar datos del usuario ${userId.substring(0, 8)}...</td></tr>`;
+                    }
+                }
+                usersList.innerHTML = userHtml;
+            } else {
+                usersList.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay usuarios registrados.</td></tr>';
+            }
+        }).catch((error) => {
+            console.error("Error al cargar usuarios de Firebase (Reglas/Conexión):", error);
+            usersList.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #f87171;">Error de conexión con la base de datos o permisos.</td></tr>';
+        });
+    }
+
+    // 4. FUNCIÓN QUE INTERPRETA EL SELECT Y LLAMA A LAS ACCIONES
+    window.handleUserAction = function(action, userId, currentStatus) {
+        if (action === 'toggle_status') {
+            window.toggleUserStatus(userId, currentStatus);
+        } else if (action === 'banear') {
+            window.banUser(userId, currentStatus);
+        } else if (action === 'eliminar') {
+            window.deleteUser(userId);
+        } else {
+            return;
+        }
+    }
+
+    // FUNCIÓN DE PAUSAR/REACTIVAR (REEMPLAZAR FUNCIÓN GLOBAL EXISTENTE)
+    window.toggleUserStatus = function(userId, currentStatus) {
+        let newStatus = currentStatus === 'pausado' ? 'activo' : 'pausado';
+        
+        Swal.fire({
+            title: `Confirmar cambio de estado`,
+            text: `¿Estás seguro de que deseas cambiar el estado del usuario ${userId}... a "${newStatus.toUpperCase()}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cambiar estado'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const userRef = ref(db, 'usuarios/' + userId);
+                update(userRef, { status: newStatus })
+                .then(() => {
+                    Swal.fire('¡Cambiado!', `Estado actualizado a ${newStatus}.`, 'success');
+                    loadUsers(); 
+                })
+                .catch((error) => {
+                    Swal.fire('Error', `Fallo al actualizar el estado: ${error.message}`, 'error');
+                    resetUserSelect(userId);
+                });
+            } else {
+                resetUserSelect(userId);
+            }
+        });
+    }
+
+    // FUNCIÓN DE BANEAR (REEMPLAZAR FUNCIÓN GLOBAL EXISTENTE)
+    window.banUser = function(userId, currentStatus) {
+        if (currentStatus === 'baneado') {
+             Swal.fire('Atención', 'Este usuario ya está baneado.', 'info');
+             resetUserSelect(userId);
+             return;
+        }
+
+        Swal.fire({
+            title: `Confirmar baneo`,
+            text: `¿Estás seguro de que quieres BANEAR permanentemente al usuario ${userId}... ?`,
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, BANEAR'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const userRef = ref(db, 'usuarios/' + userId);
+                update(userRef, { status: 'baneado' })
+                .then(() => {
+                    Swal.fire('¡Baneado!', `El usuario ${userId}... ha sido baneado.`, 'success');
+                    loadUsers(); 
+                })
+                .catch((error) => {
+                    Swal.fire('Error', `Fallo al banear: ${error.message}`, 'error');
+                    resetUserSelect(userId);
+                });
+            } else {
+                resetUserSelect(userId);
+            }
+        });
+    }
+
+    // FUNCIÓN DE ELIMINAR (REEMPLAZAR FUNCIÓN GLOBAL EXISTENTE)
+    window.deleteUser = function(userId) {
+        Swal.fire({
+            title: `¡PELIGRO! Eliminar Cuenta`,
+            text: `Esta acción ELIMINARÁ permanentemente al usuario ${userId}... y todos sus datos. ¿Estás seguro?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, ELIMINAR'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const userRef = ref(db, 'usuarios/' + userId);
+                remove(userRef)
+                .then(() => {
+                    Swal.fire('¡Eliminado!', `El usuario ${userId}... ha sido eliminado.`, 'success');
+                    loadUsers(); 
+                })
+                .catch((error) => {
+                    Swal.fire('Error', `Fallo al eliminar: ${error.message}`, 'error');
+                    resetUserSelect(userId);
+                });
+            } else {
+                resetUserSelect(userId);
+            }
+        });
+    }
+
+// LÓGICA DE TABS (REEMPLAZAR BLOQUE EXISTENTE)
 const tabs = document.querySelectorAll('.tab-btn');
 const contents = document.querySelectorAll('.tab-content');
 
@@ -467,6 +666,15 @@ tabs.forEach(tab => {
         tab.classList.add('active');
         const targetId = tab.getAttribute('data-target');
         const targetElement = document.getElementById(targetId);
-        if(targetElement) targetElement.classList.add('active');
+        if(targetElement) {
+            targetElement.classList.add('active');
+        }
+        
+        // Llamada específica para cargar usuarios al hacer click
+        if (targetId === 'tab-usuarios') {
+            if (typeof window.loadUsers === 'function') {
+                window.loadUsers();
+            }
+        }
     });
 });

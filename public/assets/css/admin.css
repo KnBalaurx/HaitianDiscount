@@ -221,3 +221,24 @@ div:where(.swal2-title) { color: var(--primary) !important; }
     0% { transform: rotate(0deg); } 
     100% { transform: rotate(360deg); } 
 }
+
+/* Nuevo estilo para el select de acciones */
+.action-select {
+    /* Mejora visual general */
+    padding: 6px 10px;
+    border: 1px solid var(--border-color, #444);
+    border-radius: 6px;
+    background-color: var(--card-bg, #2a2a44);
+    color: var(--text-main, white);
+    /* Animación o hover simple */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.action-select:hover {
+    border-color: var(--accent, #3085d6);
+    box-shadow: 0 0 5px rgba(48, 133, 214, 0.5); /* Sombra de acento */
+}
+
+.action-select option:disabled {
+    color: #999;
+}
