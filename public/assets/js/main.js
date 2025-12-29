@@ -132,6 +132,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+        // --- VALIDACIÓN DE SESIÓN AL PASAR A "MIS DATOS" ---
+
+    const btnSiguiente = document.getElementById('btnSiguienteStep'); // Asegúrate que este ID coincida con tu HTML
+
+    if (btnSiguiente) {
+        btnSiguiente.addEventListener('click', (e) => {
+            const user = auth.currentUser;
+
+            if (!user) {
+                // Detenemos la acción (evita que pase al siguiente paso o haga submit)
+                e.preventDefault();
+                e.stopImmediatePropagation(); 
+
+                // Mostramos la alerta con SweetAlert2 (que ya usas en tu código)
+                window.Swal.fire({
+                    title: '¡Atención!',
+                    text: 'Debes iniciar sesión para poder continuar con tu compra.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    }
+
     // --- FUNCIONES INTERNAS: WISHLIST ---
     
     async function toggleWishlist(e) {
